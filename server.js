@@ -809,7 +809,14 @@ async function fetchSarvamChatCompletion(body, apiKey) {
 async function generateLessonWithSarvam({ topic, level, count, uiLanguage }) {
   const apiKey = process.env.SARVAM_API_KEY;
   if (!apiKey) {
-    throw new Error("Sarvam key missing");
+    const fallbackLesson = await generateLessonFromCurated({
+      topic,
+      level,
+      count,
+      uiLanguage,
+    });
+    fallbackLesson.generationErrors = ["Sarvam key missing"];
+    return fallbackLesson;
   }
 
   const model = process.env.SARVAM_CHAT_MODEL || "sarvam-30b";
@@ -1371,40 +1378,53 @@ async function serveStatic(reqPath, res) {
   });
 }
 
-const server = http.createServer(async (req, res) => {
-  const method = req.method || "GET";
-  const url = new URL(req.url || "/", `http://${req.headers.host}`);
+function createServer() {
+  return http.createServer(async (req, res) => {
+    const method = req.method || "GET";
+    const url = new URL(req.url || "/", `http://${req.headers.host}`);
 
-  if (method === "GET" && url.pathname === "/api/providers") {
-    return handleProviders(res);
-  }
+    if (method === "GET" && url.pathname === "/api/providers") {
+      return handleProviders(res);
+    }
 
-  if (method === "POST" && url.pathname === "/api/translate") {
-    return handleTranslate(req, res);
-  }
+    if (method === "POST" && url.pathname === "/api/translate") {
+      return handleTranslate(req, res);
+    }
 
-  if (method === "POST" && url.pathname === "/api/tutor-chat") {
-    return handleTutorChat(req, res);
-  }
+    if (method === "POST" && url.pathname === "/api/tutor-chat") {
+      return handleTutorChat(req, res);
+    }
 
-  if (method === "POST" && url.pathname === "/api/generate-lesson") {
-    return handleGenerateLesson(req, res);
-  }
+    if (method === "POST" && url.pathname === "/api/generate-lesson") {
+      return handleGenerateLesson(req, res);
+    }
 
-  if (method === "GET") {
-    return serveStatic(url.pathname, res);
-  }
+    if (method === "GET") {
+      return serveStatic(url.pathname, res);
+    }
 
-  res.writeHead(405, { "Content-Type": "application/json; charset=utf-8" });
-  res.end(JSON.stringify({ error: "Method not allowed" }));
-});
+    res.writeHead(405, { "Content-Type": "application/json; charset=utf-8" });
+    res.end(JSON.stringify({ error: "Method not allowed" }));
+  });
+}
 
-server.listen(PORT, "0.0.0.0", () => {
-  const order = configuredProviderOrder().join(" -> ");
-  const lessonModel = process.env.SARVAM_CHAT_MODEL || "sarvam-30b";
-  const tutorModel = process.env.SARVAM_TUTOR_MODEL || lessonModel;
-  console.log(`[server] running at http://localhost:${PORT}`);
-  console.log(`[server] translation order: ${order}`);
-  console.log(`[server] lesson generation model: ${lessonModel}`);
-  console.log(`[server] tutor chat model: ${tutorModel}`);
-});
+if (require.main === module) {
+  const server = createServer();
+  server.listen(PORT, "0.0.0.0", () => {
+    const order = configuredProviderOrder().join(" -> ");
+    const lessonModel = process.env.SARVAM_CHAT_MODEL || "sarvam-30b";
+    const tutorModel = process.env.SARVAM_TUTOR_MODEL || lessonModel;
+    console.log(`[server] running at http://localhost:${PORT}`);
+    console.log(`[server] translation order: ${order}`);
+    console.log(`[server] lesson generation model: ${lessonModel}`);
+    console.log(`[server] tutor chat model: ${tutorModel}`);
+  });
+}
+
+module.exports = {
+  createServer,
+  handleProviders,
+  handleTranslate,
+  handleTutorChat,
+  handleGenerateLesson,
+};

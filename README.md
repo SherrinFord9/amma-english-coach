@@ -45,6 +45,23 @@ If you only want static pages (without translation API), you can still run:
 python3 -m http.server 4173
 ```
 
+## Deploy on Netlify (No Credit Card)
+
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/SherrinFord9/amma-english-coach)
+
+1. Click the Netlify button above.
+2. Connect your GitHub account and deploy.
+3. In `Site configuration` -> `Environment variables`, add:
+   - `SARVAM_API_KEY`
+   - (optional) `GEMINI_API_KEY`
+   - (optional) `OPENROUTER_API_KEY`
+4. Redeploy once after env vars are set.
+
+Netlify wiring in this repo:
+
+- `netlify.toml` rewrites `/api/*` to `/.netlify/functions/api/*`
+- `netlify/functions/api.js` runs the same backend handlers used by local `server.js`
+
 ## Deploy on Render (Free)
 
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/SherrinFord9/amma-english-coach)
