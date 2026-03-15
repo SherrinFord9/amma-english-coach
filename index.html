@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Amma English Coach</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Noto+Sans+Kannada:wght@400;500;700&family=Sora:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="bg-shape bg-shape-a"></div>
+    <div class="bg-shape bg-shape-b"></div>
+    <div class="bg-grid"></div>
+
+    <main class="app-shell">
+      <header class="hero reveal">
+        <div class="hero-top">
+          <p id="hero-tag" class="hero-tag">Kannada -> English</p>
+          <button id="lang-toggle" class="lang-toggle" type="button">EN</button>
+        </div>
+        <h1>Amma English Coach</h1>
+        <p id="hero-sub" class="hero-sub kn">
+          ದಿನಕ್ಕೆ 15 ನಿಮಿಷ. ಕೇಳಿ, ಅರ್ಥಮಾಡಿ, ಮಾತನಾಡಿ.
+        </p>
+      </header>
+
+      <section class="panel reveal">
+        <div class="panel-head">
+          <h2 id="progress-title" class="kn">ಇವತ್ತಿನ ಪ್ರಗತಿ</h2>
+          <span id="session-date" class="pill"></span>
+        </div>
+        <p id="progress-help" class="subtle panel-help">
+          These numbers update automatically after each practice attempt.
+        </p>
+        <div class="progress-grid">
+          <article class="metric-card">
+            <p id="metric-streak-label" class="metric-label kn">ಸ್ಟ್ರೀಕ್</p>
+            <p id="streak" class="metric-value">0</p>
+          </article>
+          <article class="metric-card">
+            <p id="metric-correct-label" class="metric-label kn">ಸರಿಯಾದ ಉತ್ತರಗಳು</p>
+            <p id="correct" class="metric-value">0</p>
+          </article>
+          <article class="metric-card">
+            <p id="metric-mastery-label" class="metric-label kn">ಮಾಸ್ಟರಿ</p>
+            <p id="mastery" class="metric-value">0%</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="panel reveal">
+        <div class="panel-head">
+          <h2 id="learner-title" class="kn">ಕಲಿಯುವವರ ಪ್ರೊಫೈಲ್</h2>
+          <button id="placement-btn" class="btn btn-outline">Run placement</button>
+        </div>
+        <p id="learner-help" class="subtle panel-help">
+          Run placement once. This block tracks level, skills, and revision load.
+        </p>
+        <div id="placement-form" class="placement-form hidden">
+          <p id="placement-intro" class="subtle">
+            Rate each question from 1 to 5 (1 = hard, 5 = easy).
+          </p>
+          <label id="placement-q1-label" for="placement-q1" class="subtle"></label>
+          <select id="placement-q1"></select>
+          <label id="placement-q2-label" for="placement-q2" class="subtle"></label>
+          <select id="placement-q2"></select>
+          <label id="placement-q3-label" for="placement-q3" class="subtle"></label>
+          <select id="placement-q3"></select>
+          <label id="placement-q4-label" for="placement-q4" class="subtle"></label>
+          <select id="placement-q4"></select>
+          <label id="placement-q5-label" for="placement-q5" class="subtle"></label>
+          <select id="placement-q5"></select>
+          <div class="btn-row">
+            <button id="placement-save-btn" class="btn btn-primary" type="button">
+              Save placement
+            </button>
+          </div>
+        </div>
+        <p id="learner-level" class="subtle">Level: Not assessed</p>
+        <div id="skill-grid" class="skill-grid"></div>
+        <div class="progress-grid">
+          <article class="metric-card">
+            <p id="d3-label" class="metric-label">D3 recall</p>
+            <p id="d3-value" class="metric-value">0%</p>
+          </article>
+          <article class="metric-card">
+            <p id="d7-label" class="metric-label">D7 recall</p>
+            <p id="d7-value" class="metric-value">0%</p>
+          </article>
+          <article class="metric-card">
+            <p id="due-label" class="metric-label">Need repeat</p>
+            <p id="due-count" class="metric-value">0</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="panel reveal">
+        <div class="panel-head">
+          <h2 id="lesson-select-title" class="kn">ಪಾಠ ಆಯ್ಕೆ</h2>
+          <span id="lesson-select-subtitle" class="subtle">Choose a real-life topic</span>
+        </div>
+        <article class="helper-box">
+          <p id="lesson-select-help" class="subtle">
+            Choose a daily-life topic first, then create lesson phrases.
+          </p>
+          <ol class="helper-list">
+            <li id="lesson-step-1" class="subtle">Step 1: Choose topic (shopping/doctor/phone).</li>
+            <li id="lesson-step-2" class="subtle">Step 2: Choose level (A1 easy, A2 medium, B1 advanced).</li>
+            <li id="lesson-step-3" class="subtle">Step 3: Click Generate lesson.</li>
+            <li id="lesson-step-4" class="subtle">Step 4: Click the lesson chip and start speaking practice.</li>
+          </ol>
+        </article>
+        <div class="lesson-generator">
+          <div class="lesson-field">
+            <label id="gen-topic-label" for="gen-topic" class="subtle">Topic</label>
+            <select id="gen-topic">
+              <option value="introduction">Introduction</option>
+              <option value="shopping">Shopping</option>
+              <option value="doctor">Doctor Visit</option>
+              <option value="phone">Phone Call</option>
+              <option value="travel">Travel</option>
+              <option value="family">Family</option>
+              <option value="routine">Daily Routine</option>
+            </select>
+          </div>
+
+          <div class="lesson-field">
+            <label id="gen-level-label" for="gen-level" class="subtle">Level</label>
+            <select id="gen-level">
+              <option id="gen-level-opt-a1" value="A1">A1 - Easy beginner</option>
+              <option id="gen-level-opt-a2" value="A2">A2 - Medium beginner</option>
+              <option id="gen-level-opt-b1" value="B1">B1 - Higher beginner</option>
+            </select>
+            <p id="gen-level-help" class="subtle helper-inline">
+              A1 is easiest. A2 is medium. B1 is harder and uses longer sentences.
+            </p>
+          </div>
+
+          <div class="lesson-field">
+            <label id="gen-count-label" for="gen-count" class="subtle">Phrases</label>
+            <select id="gen-count">
+              <option id="gen-count-opt-4" value="4">4 - very short lesson</option>
+              <option id="gen-count-opt-5" value="5" selected>5 - recommended</option>
+              <option id="gen-count-opt-6" value="6">6 - normal</option>
+              <option id="gen-count-opt-7" value="7">7 - longer</option>
+              <option id="gen-count-opt-8" value="8">8 - longest</option>
+            </select>
+            <p id="gen-count-help" class="subtle helper-inline">
+              This is how many practice sentences appear. Use 5-8 for regular practice.
+            </p>
+          </div>
+
+          <button id="generate-lesson-btn" class="btn btn-primary" type="button">
+            Generate lesson
+          </button>
+          <p id="generate-status" class="subtle"></p>
+        </div>
+        <div id="lesson-list" class="lesson-list"></div>
+      </section>
+
+      <section class="panel reveal">
+        <div class="panel-head">
+          <h2 id="lesson-title" class="kn">ಪಾಠ</h2>
+          <button id="next-btn" class="btn btn-outline">Next phrase</button>
+        </div>
+        <p id="lesson-practice-help" class="subtle panel-help">
+          Listen first, repeat the sentence, then reveal Kannada if needed.
+        </p>
+
+        <article class="phrase-card">
+          <p id="phrase-label" class="label">English phrase</p>
+          <p id="phrase-en" class="phrase-main"></p>
+          <p id="phrase-kn" class="phrase-meaning kn hidden"></p>
+
+          <div class="btn-row">
+            <button id="play-normal" class="btn btn-primary">Play audio</button>
+            <button id="play-slow" class="btn btn-secondary">Play slow</button>
+            <button id="show-meaning" class="btn btn-ghost kn">
+              ಕನ್ನಡ ಅರ್ಥ
+            </button>
+          </div>
+        </article>
+      </section>
+
+      <section class="panel reveal">
+        <div class="panel-head">
+          <h2 id="review-title" class="kn">ಮತ್ತೆ ಅಭ್ಯಾಸ</h2>
+          <span id="review-due-pill" class="pill">0 to repeat</span>
+        </div>
+        <p id="review-help" class="subtle panel-help">
+          Old sentences come here so you do not forget them.
+        </p>
+        <div class="btn-row">
+          <button id="start-review-btn" class="btn btn-secondary">Start repeat practice</button>
+          <button id="mark-easy-btn" class="btn btn-outline">I know this now</button>
+        </div>
+        <p id="review-status" class="subtle"></p>
+      </section>
+
+      <section class="panel reveal">
+        <div class="panel-head">
+          <h2 id="practice-title" class="kn">ಮಾತನಾಡಿ ಅಭ್ಯಾಸ ಮಾಡಿ</h2>
+          <span id="mic-status" class="subtle">Mic idle</span>
+        </div>
+        <p id="practice-help" class="subtle panel-help">
+          Use mic or type the sentence. Try to match the phrase exactly.
+        </p>
+
+        <div class="practice-wrap">
+          <button id="mic-btn" class="btn btn-primary kn">ಮೈಕ್ ಆರಂಭಿಸಿ</button>
+          <label id="typed-label" for="typed-answer" class="subtle">Fallback text input</label>
+          <input
+            id="typed-answer"
+            type="text"
+            placeholder="Type what you said in English"
+            autocomplete="off"
+          />
+          <button id="check-typed" class="btn btn-outline">Check answer</button>
+        </div>
+
+        <article id="feedback-card" class="feedback hidden">
+          <p id="feedback-title" class="feedback-title"></p>
+          <p id="feedback-body" class="feedback-body"></p>
+        </article>
+      </section>
+
+      <section class="panel reveal">
+        <div class="panel-head">
+          <h2 id="tutor-title" class="kn">ಟ್ಯೂಟರ್ ಜೊತೆ ಮಾತುಕತೆ</h2>
+          <span id="tutor-status" class="subtle">Ready to chat</span>
+        </div>
+        <p id="tutor-help" class="subtle panel-help">
+          Ask like real life. The tutor will answer, correct, and ask the next question.
+        </p>
+        <article id="tutor-log" class="tutor-log" aria-live="polite"></article>
+        <div class="practice-wrap">
+          <label id="tutor-input-label" for="tutor-input" class="subtle">Your message</label>
+          <input
+            id="tutor-input"
+            type="text"
+            placeholder="Type a sentence in Kannada or English"
+            autocomplete="off"
+          />
+          <div class="btn-row">
+            <button id="tutor-send-btn" class="btn btn-primary" type="button">Send</button>
+            <button id="tutor-mic-btn" class="btn btn-secondary" type="button">
+              Talk to tutor
+            </button>
+            <button id="tutor-use-phrase" class="btn btn-ghost" type="button">
+              Use lesson phrase
+            </button>
+            <button id="tutor-audio-toggle" class="btn btn-outline" type="button">
+              Tutor voice: ON
+            </button>
+            <button id="tutor-clear-btn" class="btn btn-outline" type="button">
+              Clear chat
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel reveal">
+        <div class="panel-head">
+          <h2 id="scenario-title" class="kn">ಸನ್ನಿವೇಶ ಅಭ್ಯಾಸ</h2>
+          <select id="scenario-topic">
+            <option value="shopping">Shopping</option>
+            <option value="doctor">Doctor</option>
+            <option value="phone">Phone</option>
+            <option value="travel">Travel</option>
+          </select>
+        </div>
+        <p id="scenario-help" class="subtle panel-help">
+          Choose a situation, answer each turn, then click Next turn.
+        </p>
+        <p id="scenario-context" class="subtle"></p>
+        <div class="btn-row">
+          <button id="scenario-start-btn" class="btn btn-primary">Start scenario</button>
+          <button id="scenario-next-btn" class="btn btn-outline" disabled>Next turn</button>
+        </div>
+        <article class="phrase-card">
+          <p id="scenario-prompt-label" class="label">Prompt</p>
+          <p id="scenario-prompt" class="phrase-main"></p>
+          <p id="scenario-target" class="subtle"></p>
+        </article>
+        <div class="practice-wrap">
+          <input
+            id="scenario-answer"
+            type="text"
+            placeholder="Say or type your response in English"
+            autocomplete="off"
+          />
+          <button id="scenario-check-btn" class="btn btn-outline">Check turn</button>
+        </div>
+        <article id="scenario-feedback-card" class="feedback hidden">
+          <p id="scenario-feedback-title" class="feedback-title"></p>
+          <p id="scenario-feedback-body" class="feedback-body"></p>
+        </article>
+      </section>
+
+      <section class="panel reveal">
+        <div class="panel-head">
+          <h2 id="translate-title" class="kn">ಅನುವಾದ ಸಹಾಯ (API)</h2>
+          <span id="provider-status" class="subtle">Checking providers...</span>
+        </div>
+        <p id="translate-help" class="subtle panel-help">
+          Use this only to quickly confirm meaning. Main learning should stay in lesson practice.
+        </p>
+
+        <div class="translator-controls">
+          <label id="direction-label" for="translate-direction" class="subtle">Direction</label>
+          <select id="translate-direction">
+            <option id="direction-opt-kn-en" value="kn-en">Kannada -> English</option>
+            <option id="direction-opt-en-kn" value="en-kn">English -> Kannada</option>
+          </select>
+
+          <label id="translate-text-label" for="translate-input" class="subtle">Text</label>
+          <textarea
+            id="translate-input"
+            rows="3"
+            placeholder="Type Kannada or English text"
+          ></textarea>
+
+          <div class="btn-row">
+            <button id="translate-btn" class="btn btn-primary">Translate now</button>
+            <button id="use-phrase" class="btn btn-ghost">Use lesson phrase</button>
+          </div>
+        </div>
+
+        <article id="translate-result" class="translate-result hidden">
+          <p id="translate-meta" class="translate-meta"></p>
+          <p id="translate-output" class="translate-output"></p>
+        </article>
+      </section>
+    </main>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

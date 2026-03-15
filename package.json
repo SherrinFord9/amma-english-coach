@@ -1,0 +1,11 @@
+{
+  "name": "language_learn",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Kannada-first local English tutor web app with translation provider fallback",
+  "scripts": {
+    "start": "node server.js",
+    "check": "node --check app.js && node --check server.js",
+    "check:grandma": "node grandma_agent_check.js"
+  }
+}
