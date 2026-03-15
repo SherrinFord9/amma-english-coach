@@ -47,6 +47,8 @@ python3 -m http.server 4173
 
 ## Deploy on Render (Free)
 
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/SherrinFord9/amma-english-coach)
+
 1. Push this repo to GitHub.
 2. In Render, click `New +` -> `Blueprint`.
 3. Select the GitHub repo and deploy using `render.yaml`.
