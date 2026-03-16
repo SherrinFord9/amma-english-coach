@@ -371,7 +371,7 @@ const UI_TEXT = {
     topicRoutine: "ದೈನಂದಿನ ಕ್ರಮ",
   },
   en: {
-    langToggle: "ಕನ್ನಡ",
+    langToggle: "EN / ಕನ್ನಡ",
     learningTrackLabel: "Learning track",
     heroTag: "Kannada -> English",
     heroSub: "15 minutes daily. Listen, understand, and speak.",
@@ -1136,15 +1136,21 @@ function ensurePlacementSelectOptions() {
   });
 }
 
+function preferSourcePrompt() {
+  return learningTrack === "mr-kn";
+}
+
 function lessonPhraseLabelText() {
-  const target = languageName(activeTrack().target);
-  return uiLanguage === "kn" ? `${target} ವಾಕ್ಯ` : `${target} phrase`;
+  const track = activeTrack();
+  const phraseLang = preferSourcePrompt() ? languageName(track.support) : languageName(track.target);
+  return uiLanguage === "kn" ? `${phraseLang} ವಾಕ್ಯ` : `${phraseLang} phrase`;
 }
 
 function meaningButtonText(isShown) {
   if (isShown) return t("hideMeaning");
-  const support = languageName(activeTrack().support);
-  return uiLanguage === "kn" ? `${support} ಅರ್ಥ` : `Show ${support} meaning`;
+  const track = activeTrack();
+  const meaningLang = preferSourcePrompt() ? languageName(track.target) : languageName(track.support);
+  return uiLanguage === "kn" ? `${meaningLang} ಅರ್ಥ` : `Show ${meaningLang} meaning`;
 }
 
 function typedPlaceholderText() {
@@ -1157,6 +1163,11 @@ function typedPlaceholderText() {
 function lessonPracticeHelpText() {
   const target = languageName(activeTrack().target);
   const support = languageName(activeTrack().support);
+  if (preferSourcePrompt()) {
+    return uiLanguage === "kn"
+      ? `ಮೊದಲು ${support} ವಾಕ್ಯ ನೋಡಿ, ನಂತರ ${target} ನಲ್ಲಿ ಉತ್ತರಿಸಿ. ಬೇಕಾದರೆ ${target} ಅರ್ಥ ನೋಡಿ.`
+      : `Read the ${support} phrase first, then answer in ${target}. Reveal ${target} meaning if needed.`;
+  }
   return uiLanguage === "kn"
     ? `ಮೊದಲು ಕೇಳಿ, ನಂತರ ${target} ವಾಕ್ಯ ಹೇಳಿ. ಬೇಕಾದರೆ ${support} ಅರ್ಥ ನೋಡಿ.`
     : `Listen first, repeat in ${target}, then reveal ${support} meaning if needed.`;
@@ -1164,6 +1175,12 @@ function lessonPracticeHelpText() {
 
 function practiceHelpText() {
   const target = languageName(activeTrack().target);
+  const support = languageName(activeTrack().support);
+  if (preferSourcePrompt()) {
+    return uiLanguage === "kn"
+      ? `ಮೈಕ್ ಬಳಸಿ ಅಥವಾ ಕೆಳಗೆ ಟೈಪ್ ಮಾಡಿ. ಮೇಲಿನ ${support} ಸೂಚನೆಯನ್ನು ನೋಡಿ ${target} ನಲ್ಲಿ ಹೇಳಿ.`
+      : `Use mic or type in ${target}. Read the ${support} prompt and respond in ${target}.`;
+  }
   return uiLanguage === "kn"
     ? `ಮೈಕ್ ಬಳಸಿ ಅಥವಾ ಕೆಳಗೆ ಟೈಪ್ ಮಾಡಿ. ಪರದೆಯಲ್ಲಿನ ${target} ವಾಕ್ಯಕ್ಕೆ ಹತ್ತಿರವಾಗಿ ಹೇಳಿ.`
     : `Use mic or type the sentence. Try to match the ${target} phrase exactly.`;
@@ -1377,12 +1394,17 @@ function renderPhrase() {
   const target = phraseTargetText(phrase);
   const support = phraseSupportText(phrase);
   const track = activeTrack();
+  const sourceFirst = preferSourcePrompt();
+  const primaryText = sourceFirst ? support : target;
+  const secondaryText = sourceFirst ? target : support;
+  const primaryLanguage = sourceFirst ? track.support : track.target;
+  const secondaryLanguage = sourceFirst ? track.target : track.support;
   els.lessonTitle.textContent =
     uiLanguage === "kn" ? `${lesson.titleKn} - ${lesson.titleEn}` : lesson.titleEn;
-  els.phraseEn.textContent = target;
-  els.phraseKn.textContent = support;
-  applyScriptClass(els.phraseEn, track.target);
-  applyScriptClass(els.phraseKn, track.support);
+  els.phraseEn.textContent = primaryText;
+  els.phraseKn.textContent = secondaryText;
+  applyScriptClass(els.phraseEn, primaryLanguage);
+  applyScriptClass(els.phraseKn, secondaryLanguage);
   els.phraseKn.classList.add("hidden");
   els.showMeaning.textContent = meaningButtonText(false);
   els.typedAnswer.value = "";
