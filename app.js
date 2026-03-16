@@ -540,29 +540,70 @@ UI_TEXT.mr = {
   learningTrackLabel: "शिकण्याची दिशा",
   heroSub: "दररोज 15 मिनिटे. ऐका, समजा, आणि बोला.",
   progressTitle: "आजची प्रगती",
+  progressHelp: "प्रत्येक सरावानंतर हे आकडे आपोआप अपडेट होतात.",
   learnerTitle: "शिकणाऱ्याची प्रोफाइल",
+  learnerHelp: "एकदा प्लेसमेंट करा. येथे पातळी, कौशल्ये आणि पुनरावलोकन दिसेल.",
   lessonSelectTitle: "पाठ निवडा",
+  lessonSelectSubtitle: "या भागातून नवीन सराव पाठ तयार होतो",
+  lessonSelectHelp: "इथे विषय, पातळी आणि वाक्यसंख्या निवडा, मग पाठ तयार करा.",
+  lessonStep1: "पायरी 1: विषय निवडा (खरेदी/डॉक्टर/फोन).",
+  lessonStep2: "पायरी 2: पातळी निवडा: A1 सोपी, A2 मध्यम, B1 अवघड.",
+  lessonStep3: "पायरी 3: 'पाठ तयार करा' क्लिक करा.",
+  lessonStep4: "पायरी 4: खालील पाठ निवडा आणि बोलण्याचा सराव सुरू करा.",
+  genTopicLabel: "विषय",
+  genLevelLabel: "पातळी (अवघडपणा)",
+  genLevelHelp: "A1 सर्वात सोपी. A2 मध्यम. B1 अवघड आणि मोठी वाक्ये.",
+  genLevelOptA1: "A1 - सोपी सुरुवात",
+  genLevelOptA2: "A2 - मध्यम सुरुवात",
+  genLevelOptB1: "B1 - पुढची पातळी",
+  genCountLabel: "किती वाक्ये?",
+  genCountHelp: "एका पाठात किती सराव वाक्ये हवीत. 5-8 योग्य.",
+  genCountOpt4: "4 - खूप छोटा पाठ",
+  genCountOpt5: "5 - सुचवलेले",
+  genCountOpt6: "6 - सामान्य",
+  genCountOpt7: "7 - थोडा मोठा",
+  genCountOpt8: "8 - सर्वात मोठा",
   genButton: "पाठ तयार करा",
+  genReady: "पर्याय निवडा आणि नवीन पाठ तयार करा.",
+  genWorking: "पाठ तयार होत आहे...",
+  genLoadedPrefix: "पाठ तयार",
+  genFailedPrefix: "तयार करण्यात अडचण",
   nextPhrase: "पुढचे वाक्य",
+  lessonPracticeHelp: "आधी वाक्य ऐका, मग बोला. गरज असल्यास अर्थ पाहा.",
   phraseLabel: "इंग्रजी वाक्य",
   playAudio: "आवाज ऐका",
   playSlow: "हळू ऐका",
   showMeaning: "अर्थ दाखवा",
   hideMeaning: "अर्थ लपवा",
   practiceTitle: "बोलण्याचा सराव",
+  practiceHelp: "माइक वापरा किंवा खाली टाईप करा. वाक्य जवळपास तसंच बोला.",
+  typedLabel: "टाईप करून तपासा",
+  typedPlaceholder: "तुम्ही जे बोललात ते टाईप करा",
   checkAnswer: "उत्तर तपासा",
   reviewTitle: "पुन्हा सराव",
+  reviewHelp: "जुनी वाक्ये इथे येतात, विसरू नये म्हणून.",
   startReviewBtn: "पुन्हा सराव सुरू करा",
   markEasyBtn: "हे आता येते",
+  reviewReady: "जुनी वाक्ये आल्यावर इथून पुन्हा सराव सुरू करा.",
   tutorTitle: "ट्यूटरशी संभाषण",
+  tutorHelp: "हवे असल्यास टाईप करा किंवा थेट बोला. ट्यूटर दुरुस्ती करून पुढचा प्रश्न विचारेल.",
   tutorSendBtn: "पाठवा",
   tutorUsePhraseBtn: "पाठातील वाक्य वापरा",
   tutorClearBtn: "चॅट साफ करा",
+  tutorInputLabel: "तुमचा संदेश",
+  tutorStatusReady: "चॅटसाठी तयार",
+  tutorStatusThinking: "ट्यूटर उत्तर देत आहे...",
+  tutorStatusError: "ट्यूटर त्रुटी",
   scenarioTitle: "परिस्थिती सराव",
+  scenarioHelp: "एक परिस्थिती निवडा, प्रत्येक टर्नला उत्तर द्या, मग Next turn दाबा.",
+  scenarioUnsupported: "परिस्थिती सराव सध्या फक्त ಕನ್ನಡ -> इंग्रजी ट्रॅकसाठी आहे.",
   scenarioStartBtn: "सराव सुरू करा",
   scenarioCheckBtn: "टर्न तपासा",
   translateTitle: "अनुवाद मदत (API)",
+  translateHelp: "फक्त अर्थ तपासण्यासाठी वापरा. मुख्य सराव पाठ आणि बोलण्यात ठेवा.",
   directionLabel: "दिशा",
+  translateTextLabel: "मजकूर",
+  translatePlaceholder: "मराठी, ಕನ್ನಡ किंवा इंग्रजी मजकूर लिहा",
   translateBtn: "आता अनुवाद करा",
   useLessonPhrase: "पाठातील वाक्य वापरा",
   tutorUserLabel: "तुम्ही",
@@ -1196,6 +1237,7 @@ function preferSourcePrompt() {
 function lessonPhraseLabelText() {
   const track = activeTrack();
   const phraseLang = preferSourcePrompt() ? languageName(track.support) : languageName(track.target);
+  if (uiLanguage === "mr") return `${phraseLang} वाक्य`;
   return uiLanguage === "kn" ? `${phraseLang} ವಾಕ್ಯ` : `${phraseLang} phrase`;
 }
 
@@ -1203,11 +1245,13 @@ function meaningButtonText(isShown) {
   if (isShown) return t("hideMeaning");
   const track = activeTrack();
   const meaningLang = preferSourcePrompt() ? languageName(track.target) : languageName(track.support);
+  if (uiLanguage === "mr") return `${meaningLang} अर्थ दाखवा`;
   return uiLanguage === "kn" ? `${meaningLang} ಅರ್ಥ` : `Show ${meaningLang} meaning`;
 }
 
 function typedPlaceholderText() {
   const target = languageName(activeTrack().target);
+  if (uiLanguage === "mr") return `तुम्ही बोललेले ${target} वाक्य टाईप करा`;
   return uiLanguage === "kn"
     ? `ನೀವು ಹೇಳಿದ ${target} ವಾಕ್ಯವನ್ನು ಟೈಪ್ ಮಾಡಿ`
     : `Type what you said in ${target}`;
@@ -1216,6 +1260,12 @@ function typedPlaceholderText() {
 function lessonPracticeHelpText() {
   const target = languageName(activeTrack().target);
   const support = languageName(activeTrack().support);
+  if (uiLanguage === "mr" && preferSourcePrompt()) {
+    return `आधी ${support} वाक्य वाचा, मग ${target} मध्ये उत्तर द्या. गरज असेल तर ${target} अर्थ पाहा.`;
+  }
+  if (uiLanguage === "mr") {
+    return `आधी ऐका, मग ${target} वाक्य बोला. गरज असेल तर ${support} अर्थ पाहा.`;
+  }
   if (preferSourcePrompt()) {
     return uiLanguage === "kn"
       ? `ಮೊದಲು ${support} ವಾಕ್ಯ ನೋಡಿ, ನಂತರ ${target} ನಲ್ಲಿ ಉತ್ತರಿಸಿ. ಬೇಕಾದರೆ ${target} ಅರ್ಥ ನೋಡಿ.`
@@ -1229,6 +1279,12 @@ function lessonPracticeHelpText() {
 function practiceHelpText() {
   const target = languageName(activeTrack().target);
   const support = languageName(activeTrack().support);
+  if (uiLanguage === "mr" && preferSourcePrompt()) {
+    return `माइक वापरा किंवा खाली टाईप करा. वरचे ${support} पाहून ${target} मध्ये उत्तर द्या.`;
+  }
+  if (uiLanguage === "mr") {
+    return `माइक वापरा किंवा खाली टाईप करा. स्क्रीनवरील ${target} वाक्याशी जुळेल असे बोला.`;
+  }
   if (preferSourcePrompt()) {
     return uiLanguage === "kn"
       ? `ಮೈಕ್ ಬಳಸಿ ಅಥವಾ ಕೆಳಗೆ ಟೈಪ್ ಮಾಡಿ. ಮೇಲಿನ ${support} ಸೂಚನೆಯನ್ನು ನೋಡಿ ${target} ನಲ್ಲಿ ಹೇಳಿ.`
@@ -1242,6 +1298,9 @@ function practiceHelpText() {
 function tutorHelpText() {
   const target = languageName(activeTrack().target);
   const support = languageName(activeTrack().support);
+  if (uiLanguage === "mr") {
+    return `टाईप करा किंवा 'Talk to tutor' दाबून बोला. ट्यूटर ${target} मध्ये उत्तर देईल, दुरुस्ती करेल आणि ${support} हिंट देईल.`;
+  }
   return uiLanguage === "kn"
     ? `ಟೈಪ್ ಮಾಡಬಹುದು ಅಥವಾ 'ಟ್ಯೂಟರ್ ಜೊತೆ ಮಾತನಾಡಿ' ಒತ್ತಿ. ಟ್ಯೂಟರ್ ${target}ನಲ್ಲಿ ಉತ್ತರಿಸಿ, ಸರಿಪಡಿಸಿ, ${support} ಹಿಂಟ್ ಕೊಡುತ್ತದೆ.`
     : `Type if needed, or press Talk to tutor. Tutor replies in ${target}, corrects your line, and gives a short ${support} hint.`;
@@ -1250,6 +1309,7 @@ function tutorHelpText() {
 function tutorInputPlaceholderText() {
   const target = languageName(activeTrack().target);
   const support = languageName(activeTrack().support);
+  if (uiLanguage === "mr") return `${support} किंवा ${target} मध्ये एक वाक्य लिहा`;
   return uiLanguage === "kn"
     ? `${support} ಅಥವಾ ${target} ನಲ್ಲಿ ಒಂದು ವಾಕ್ಯ ಬರೆಯಿರಿ`
     : `Type a sentence in ${support} or ${target}`;
