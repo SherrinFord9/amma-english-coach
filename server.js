@@ -494,7 +494,9 @@ function learningTrackConfig(track) {
 }
 
 function parseUiLanguage(value) {
-  return String(value || "").trim().toLowerCase() === "en" ? "en" : "kn";
+  const v = String(value || "").trim().toLowerCase();
+  if (v === "en" || v === "kn" || v === "mr") return v;
+  return "kn";
 }
 
 function normalizeTutorMessage(value, maxLen = 420) {
@@ -1048,6 +1050,22 @@ function fallbackTutorReply({ message, uiLanguage, learningTrack }) {
   const safe = normalizeTutorMessage(message, 160) || "I want to improve.";
   const track = learningTrackConfig(learningTrack);
   if (track.id === "mr-kn") {
+    if (uiLanguage === "mr") {
+      return [
+        `छान प्रयत्न. असे म्हणा: "${safe}"`,
+        "Better Kannada: छोटे आणि स्पष्ट कन्नड वाक्य वापरा.",
+        "Marathi hint: वाक्य छोटे ठेवा आणि हळू बोला.",
+        "Follow-up: याच विषयावर अजून एक कन्नड वाक्य सांगाल का?",
+      ].join("\n");
+    }
+    if (uiLanguage === "en") {
+      return [
+        `Good attempt. Try: "${safe}"`,
+        "Better Kannada: Use a short, clear Kannada sentence.",
+        "Marathi hint: छोटे आणि स्पष्ट वाक्य बोला.",
+        "Follow-up: Can you say one more Kannada sentence on this topic?",
+      ].join("\n");
+    }
     return [
       `ಚೆನ್ನಾಗಿದೆ. ಹೀಗೆ ಹೇಳಬಹುದು: "${safe}"`,
       "Better Kannada: ಚಿಕ್ಕ ಮತ್ತು ಸ್ಪಷ್ಟ ವಾಕ್ಯ ಬಳಸಿ.",
@@ -1088,6 +1106,14 @@ async function generateTutorReplyWithSarvam({
   const topicTitle = lessonTopicTitle(topic);
   const targetLanguageName = LANGUAGE_NAMES[track.target] || "target language";
   const supportLanguageName = LANGUAGE_NAMES[track.support] || "support language";
+  const uiLanguageName = LANGUAGE_NAMES[uiLanguage] || "English";
+  const tutorResponseLanguage =
+    track.id === "mr-kn" && uiLanguage === "mr"
+      ? "Marathi"
+      : track.id === "mr-kn" && uiLanguage === "en"
+      ? "English"
+      : targetLanguageName;
+  const followupLanguage = tutorResponseLanguage;
   const currentPhraseHint = normalizeTutorMessage(currentPhrase, 180)
     ? `Current lesson phrase (${targetLanguageName}): ${normalizeTutorMessage(currentPhrase, 180)}`
     : "Current lesson phrase: none";
@@ -1098,10 +1124,10 @@ async function generateTutorReplyWithSarvam({
     "Keep the response short and practical for CEFR level",
     level + ".",
     "Response format rules:",
-    `1) First line: direct tutor response in simple ${targetLanguageName}.`,
+    `1) First line: direct tutor response in simple ${tutorResponseLanguage}.`,
     `2) Second line: Better ${targetLanguageName}: <corrected sentence>.`,
     `3) Third line: ${supportLanguageName} hint: <very short hint in ${supportLanguageName}>.`,
-    `4) Fourth line: Follow-up: <short next question in ${targetLanguageName}>.`,
+    `4) Fourth line: Follow-up: <short next question in ${followupLanguage}>.`,
     "Do not use markdown bullets, tables, JSON, code fences, or reasoning text.",
     "Maximum 90 words total.",
   ].join(" ");
@@ -1123,7 +1149,7 @@ async function generateTutorReplyWithSarvam({
     role: "user",
     content: [
       `Topic: ${topicTitle.en}.`,
-      `UI language: ${uiLanguage === "kn" ? "Kannada" : "English"}.`,
+      `UI language: ${uiLanguageName}.`,
       currentPhraseHint,
       `Learner message: ${normalizedMessage}`,
     ].join("\n"),

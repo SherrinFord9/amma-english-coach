@@ -112,6 +112,14 @@ async function run() {
   try {
     await driver.get(TARGET_URL);
     await driver.wait(until.elementLocated(By.id("review-title")), 15000);
+    await driver.executeScript(`
+      const track = document.getElementById('learning-track');
+      if (track) {
+        track.value = 'kn-en';
+        track.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    `);
+    await driver.sleep(250);
 
     await ensureLanguage(driver, "en");
     const englishTexts = await collectTexts(driver);

@@ -22,9 +22,9 @@ const LEARNING_TRACKS = {
 };
 
 const LANGUAGE_DISPLAY_NAMES = {
-  en: { en: "English", kn: "ಇಂಗ್ಲಿಷ್" },
-  kn: { en: "Kannada", kn: "ಕನ್ನಡ" },
-  mr: { en: "Marathi", kn: "ಮರಾಠಿ" },
+  en: { en: "English", kn: "ಇಂಗ್ಲಿಷ್", mr: "इंग्रजी" },
+  kn: { en: "Kannada", kn: "ಕನ್ನಡ", mr: "कन्नड" },
+  mr: { en: "Marathi", kn: "ಮರಾಠಿ", mr: "मराठी" },
 };
 
 const DEFAULT_LESSONS_BY_TRACK = {
@@ -534,6 +534,41 @@ const UI_TEXT = {
   },
 };
 
+UI_TEXT.mr = {
+  ...UI_TEXT.en,
+  langToggle: "EN / मराठी",
+  learningTrackLabel: "शिकण्याची दिशा",
+  heroSub: "दररोज 15 मिनिटे. ऐका, समजा, आणि बोला.",
+  progressTitle: "आजची प्रगती",
+  learnerTitle: "शिकणाऱ्याची प्रोफाइल",
+  lessonSelectTitle: "पाठ निवडा",
+  genButton: "पाठ तयार करा",
+  nextPhrase: "पुढचे वाक्य",
+  phraseLabel: "इंग्रजी वाक्य",
+  playAudio: "आवाज ऐका",
+  playSlow: "हळू ऐका",
+  showMeaning: "अर्थ दाखवा",
+  hideMeaning: "अर्थ लपवा",
+  practiceTitle: "बोलण्याचा सराव",
+  checkAnswer: "उत्तर तपासा",
+  reviewTitle: "पुन्हा सराव",
+  startReviewBtn: "पुन्हा सराव सुरू करा",
+  markEasyBtn: "हे आता येते",
+  tutorTitle: "ट्यूटरशी संभाषण",
+  tutorSendBtn: "पाठवा",
+  tutorUsePhraseBtn: "पाठातील वाक्य वापरा",
+  tutorClearBtn: "चॅट साफ करा",
+  scenarioTitle: "परिस्थिती सराव",
+  scenarioStartBtn: "सराव सुरू करा",
+  scenarioCheckBtn: "टर्न तपासा",
+  translateTitle: "अनुवाद मदत (API)",
+  directionLabel: "दिशा",
+  translateBtn: "आता अनुवाद करा",
+  useLessonPhrase: "पाठातील वाक्य वापरा",
+  tutorUserLabel: "तुम्ही",
+  tutorAssistantLabel: "ट्यूटर",
+};
+
 const els = {
   langToggle: document.querySelector("#lang-toggle"),
   learningTrackLabel: document.querySelector("#learning-track-label"),
@@ -872,9 +907,25 @@ function applyScriptClass(el, langCode) {
   if (langCode === "mr") el.classList.add("mr");
 }
 
+function supportedUiLanguages(trackId = learningTrack) {
+  return trackId === "mr-kn" ? ["en", "mr"] : ["en", "kn"];
+}
+
+function normalizeUiLanguageForTrack(language, trackId = learningTrack) {
+  const allowed = supportedUiLanguages(trackId);
+  const value = String(language || "").trim().toLowerCase();
+  if (allowed.includes(value)) return value;
+  return trackId === "mr-kn" ? "mr" : "kn";
+}
+
+function toggleUiLanguageForTrack(language, trackId = learningTrack) {
+  const support = trackId === "mr-kn" ? "mr" : "kn";
+  return language === "en" ? support : "en";
+}
+
 function loadUiLanguage() {
   const saved = window.localStorage.getItem(UI_LANGUAGE_KEY);
-  return saved === "en" || saved === "kn" ? saved : "kn";
+  return normalizeUiLanguageForTrack(saved || "", learningTrack);
 }
 
 function saveUiLanguage() {
@@ -1015,8 +1066,10 @@ function getCurrentPhrase() {
 
 function renderDate() {
   const d = new Date();
+  const locale =
+    uiLanguage === "kn" ? "kn-IN" : uiLanguage === "mr" ? "mr-IN" : "en-US";
   els.date.textContent = d.toLocaleDateString(
-    uiLanguage === "kn" ? "kn-IN" : "en-US",
+    locale,
     {
     month: "short",
     day: "numeric",
@@ -1209,9 +1262,13 @@ function languageToggleText() {
 
 function tutorWelcomeText() {
   if (learningTrack === "mr-kn") {
-    return uiLanguage === "kn"
-      ? "ನಮಸ್ಕಾರ. ನಾನು ನಿಮ್ಮ ಕನ್ನಡ ಟ್ಯೂಟರ್.\nಇವತ್ತು ಯಾವ ವಿಷಯದಲ್ಲಿ ಕನ್ನಡ ಅಭ್ಯಾಸ ಮಾಡೋಣ?"
-      : "Hi, I am your Kannada tutor.\nWhich real-life topic do you want to practice in Kannada today?";
+    if (uiLanguage === "kn") {
+      return "ನಮಸ್ಕಾರ. ನಾನು ನಿಮ್ಮ ಕನ್ನಡ ಟ್ಯೂಟರ್.\nಇವತ್ತು ಯಾವ ವಿಷಯದಲ್ಲಿ ಕನ್ನಡ ಅಭ್ಯಾಸ ಮಾಡೋಣ?";
+    }
+    if (uiLanguage === "mr") {
+      return "नमस्कार. मी तुमची कन्नड ट्यूटर आहे.\nआज कोणता विषय कन्नडमध्ये सराव करायचा?";
+    }
+    return "Hi, I am your Kannada tutor.\nWhich real-life topic do you want to practice in Kannada today?";
   }
   return t("tutorWelcome");
 }
@@ -2112,6 +2169,14 @@ function useLessonPhraseForTutor() {
 function localTutorFallback(userMessage) {
   const safe = userMessage.trim() || "I want to improve.";
   if (learningTrack === "mr-kn") {
+    if (uiLanguage === "mr") {
+      return [
+        `छान प्रयत्न. असे म्हणा: "${safe}"`,
+        "Better Kannada: छोटे आणि स्पष्ट कन्नड वाक्य वापरा.",
+        "Marathi hint: वाक्य छोटे ठेवा आणि हळू बोला.",
+        "Follow-up: याच विषयावर अजून एक कन्नड वाक्य सांगाल का?",
+      ].join("\n");
+    }
     return [
       `ಚೆನ್ನಾಗಿದೆ. ಹೀಗೆ ಹೇಳಿ: "${safe}"`,
       "Better Kannada: ಚಿಕ್ಕ ಮತ್ತು ಸ್ಪಷ್ಟ ವಾಕ್ಯ ಬಳಸಿ.",
@@ -2363,6 +2428,8 @@ function switchLearningTrack(nextTrack) {
 
   learningTrack = nextTrack;
   saveLearningTrack();
+  uiLanguage = normalizeUiLanguageForTrack(uiLanguage, learningTrack);
+  saveUiLanguage();
 
   if (!lessonsByTrack[learningTrack]) {
     lessonsByTrack[learningTrack] = cloneLessons(
@@ -2482,7 +2549,7 @@ els.scenarioAnswer.addEventListener("keydown", (event) => {
 });
 
 els.langToggle.addEventListener("click", () => {
-  uiLanguage = uiLanguage === "kn" ? "en" : "kn";
+  uiLanguage = toggleUiLanguageForTrack(uiLanguage, learningTrack);
   saveUiLanguage();
   applyUiLanguage();
   renderDate();
