@@ -1,87 +1,198 @@
 "use strict";
 
-const DEFAULT_LESSONS = [
-  {
-    id: "intro",
-    topic: "introduction",
-    titleKn: "ಪರಿಚಯ",
-    titleEn: "Introduction",
-    phrases: [
-      {
-        en: "Hello, my name is Lakshmi.",
-        kn: "ನಮಸ್ಕಾರ, ನನ್ನ ಹೆಸರು ಲಕ್ಷ್ಮಿ.",
-      },
-      {
-        en: "I am from Mysuru.",
-        kn: "ನಾನು ಮೈಸೂರುದಿಂದ ಬಂದಿದ್ದೇನೆ.",
-      },
-      {
-        en: "I am learning English every day.",
-        kn: "ನಾನು ಪ್ರತಿದಿನ ಇಂಗ್ಲಿಷ್ ಕಲಿಯುತ್ತಿದ್ದೇನೆ.",
-      },
-    ],
+const DEFAULT_LEARNING_TRACK = "kn-en";
+
+const LEARNING_TRACKS = {
+  "kn-en": {
+    id: "kn-en",
+    source: "kn",
+    target: "en",
+    support: "kn",
+    practiceLocale: "en-US",
+    supportLocale: "kn-IN",
   },
-  {
-    id: "shopping",
-    topic: "shopping",
-    titleKn: "ಶಾಪಿಂಗ್",
-    titleEn: "Shopping",
-    phrases: [
-      {
-        en: "How much does this cost?",
-        kn: "ಇದಕ್ಕೆ ಎಷ್ಟು ಬೆಲೆ?",
-      },
-      {
-        en: "Please give me one kilogram of rice.",
-        kn: "ದಯವಿಟ್ಟು ಒಂದು ಕಿಲೋ ಅಕ್ಕಿ ನೀಡಿ.",
-      },
-      {
-        en: "Do you have a smaller size?",
-        kn: "ಚಿಕ್ಕ ಸೈಸ್ ಇದೆಯಾ?",
-      },
-    ],
+  "mr-kn": {
+    id: "mr-kn",
+    source: "mr",
+    target: "kn",
+    support: "mr",
+    practiceLocale: "kn-IN",
+    supportLocale: "mr-IN",
   },
-  {
-    id: "doctor",
-    topic: "doctor",
-    titleKn: "ಡಾಕ್ಟರ್ ಬಳಿ",
-    titleEn: "Doctor Visit",
-    phrases: [
-      {
-        en: "I have a headache since morning.",
-        kn: "ಬೆಳಗ್ಗೆಯಿಂದ ನನಗೆ ತಲೆನೋವು ಇದೆ.",
-      },
-      {
-        en: "I need to see the doctor today.",
-        kn: "ಇಂದು ನನಗೆ ಡಾಕ್ಟರ್‌ರನ್ನು ನೋಡಬೇಕು.",
-      },
-      {
-        en: "Should I take this medicine after food?",
-        kn: "ಈ ಔಷಧವನ್ನು ಊಟದ ನಂತರ ತೆಗೆದುಕೊಳ್ಳಬೇಕಾ?",
-      },
-    ],
-  },
-  {
-    id: "phone",
-    topic: "phone",
-    titleKn: "ಫೋನ್ ಮಾತು",
-    titleEn: "Phone Call",
-    phrases: [
-      {
-        en: "Can I call you back in ten minutes?",
-        kn: "ನಾನು ನಿಮಗೆ ಹತ್ತು ನಿಮಿಷಗಳಲ್ಲಿ ಹಿಂದಿರುಗಿ ಕರೆ ಮಾಡಬಹುದಾ?",
-      },
-      {
-        en: "Please speak slowly.",
-        kn: "ದಯವಿಟ್ಟು ನಿಧಾನವಾಗಿ ಮಾತಾಡಿ.",
-      },
-      {
-        en: "I did not understand. Can you repeat that?",
-        kn: "ನನಗೆ ಅರ್ಥವಾಗಲಿಲ್ಲ. ಅದನ್ನು ಮತ್ತೆ ಹೇಳುತ್ತೀರಾ?",
-      },
-    ],
-  },
-];
+};
+
+const LANGUAGE_DISPLAY_NAMES = {
+  en: { en: "English", kn: "ಇಂಗ್ಲಿಷ್" },
+  kn: { en: "Kannada", kn: "ಕನ್ನಡ" },
+  mr: { en: "Marathi", kn: "ಮರಾಠಿ" },
+};
+
+const DEFAULT_LESSONS_BY_TRACK = {
+  "kn-en": [
+    {
+      id: "intro",
+      topic: "introduction",
+      titleKn: "ಪರಿಚಯ",
+      titleEn: "Introduction",
+      phrases: [
+        {
+          en: "Hello, my name is Lakshmi.",
+          kn: "ನಮಸ್ಕಾರ, ನನ್ನ ಹೆಸರು ಲಕ್ಷ್ಮಿ.",
+        },
+        {
+          en: "I am from Mysuru.",
+          kn: "ನಾನು ಮೈಸೂರುದಿಂದ ಬಂದಿದ್ದೇನೆ.",
+        },
+        {
+          en: "I am learning English every day.",
+          kn: "ನಾನು ಪ್ರತಿದಿನ ಇಂಗ್ಲಿಷ್ ಕಲಿಯುತ್ತಿದ್ದೇನೆ.",
+        },
+      ],
+    },
+    {
+      id: "shopping",
+      topic: "shopping",
+      titleKn: "ಶಾಪಿಂಗ್",
+      titleEn: "Shopping",
+      phrases: [
+        {
+          en: "How much does this cost?",
+          kn: "ಇದಕ್ಕೆ ಎಷ್ಟು ಬೆಲೆ?",
+        },
+        {
+          en: "Please give me one kilogram of rice.",
+          kn: "ದಯವಿಟ್ಟು ಒಂದು ಕಿಲೋ ಅಕ್ಕಿ ನೀಡಿ.",
+        },
+        {
+          en: "Do you have a smaller size?",
+          kn: "ಚಿಕ್ಕ ಸೈಸ್ ಇದೆಯಾ?",
+        },
+      ],
+    },
+    {
+      id: "doctor",
+      topic: "doctor",
+      titleKn: "ಡಾಕ್ಟರ್ ಬಳಿ",
+      titleEn: "Doctor Visit",
+      phrases: [
+        {
+          en: "I have a headache since morning.",
+          kn: "ಬೆಳಗ್ಗೆಯಿಂದ ನನಗೆ ತಲೆನೋವು ಇದೆ.",
+        },
+        {
+          en: "I need to see the doctor today.",
+          kn: "ಇಂದು ನನಗೆ ಡಾಕ್ಟರ್‌ರನ್ನು ನೋಡಬೇಕು.",
+        },
+        {
+          en: "Should I take this medicine after food?",
+          kn: "ಈ ಔಷಧವನ್ನು ಊಟದ ನಂತರ ತೆಗೆದುಕೊಳ್ಳಬೇಕಾ?",
+        },
+      ],
+    },
+    {
+      id: "phone",
+      topic: "phone",
+      titleKn: "ಫೋನ್ ಮಾತು",
+      titleEn: "Phone Call",
+      phrases: [
+        {
+          en: "Can I call you back in ten minutes?",
+          kn: "ನಾನು ನಿಮಗೆ ಹತ್ತು ನಿಮಿಷಗಳಲ್ಲಿ ಹಿಂದಿರುಗಿ ಕರೆ ಮಾಡಬಹುದಾ?",
+        },
+        {
+          en: "Please speak slowly.",
+          kn: "ದಯವಿಟ್ಟು ನಿಧಾನವಾಗಿ ಮಾತಾಡಿ.",
+        },
+        {
+          en: "I did not understand. Can you repeat that?",
+          kn: "ನನಗೆ ಅರ್ಥವಾಗಲಿಲ್ಲ. ಅದನ್ನು ಮತ್ತೆ ಹೇಳುತ್ತೀರಾ?",
+        },
+      ],
+    },
+  ],
+  "mr-kn": [
+    {
+      id: "intro",
+      topic: "introduction",
+      titleKn: "ಪರಿಚಯ",
+      titleEn: "Introduction",
+      phrases: [
+        {
+          en: "ನಮಸ್ಕಾರ, ನನ್ನ ಹೆಸರು ಅನಿತಾ.",
+          kn: "नमस्कार, माझं नाव अनीता आहे.",
+        },
+        {
+          en: "ನಾನು ಪುಣೆಯಿಂದ ಬಂದಿದ್ದೇನೆ.",
+          kn: "मी पुण्याहून आले आहे.",
+        },
+        {
+          en: "ನಾನು ಪ್ರತಿದಿನ ಕನ್ನಡ ಅಭ್ಯಾಸ ಮಾಡುತ್ತೇನೆ.",
+          kn: "मी रोज कन्नडचा सराव करते.",
+        },
+      ],
+    },
+    {
+      id: "shopping",
+      topic: "shopping",
+      titleKn: "ಶಾಪಿಂಗ್",
+      titleEn: "Shopping",
+      phrases: [
+        {
+          en: "ಇದಕ್ಕೆ ಎಷ್ಟು ಬೆಲೆ?",
+          kn: "याची किंमत किती आहे?",
+        },
+        {
+          en: "ದಯವಿಟ್ಟು ಒಂದು ಕಿಲೋ ಅಕ್ಕಿ ಕೊಡಿ.",
+          kn: "कृपया एक किलो तांदूळ द्या.",
+        },
+        {
+          en: "ಚಿಕ್ಕ ಸೈಸ್ ಇದೆಯೆ?",
+          kn: "लहान साईज आहे का?",
+        },
+      ],
+    },
+    {
+      id: "doctor",
+      topic: "doctor",
+      titleKn: "ಡಾಕ್ಟರ್ ಭೇಟಿ",
+      titleEn: "Doctor Visit",
+      phrases: [
+        {
+          en: "ನನಗೆ ನಿನ್ನೆಯಿಂದ ಜ್ವರ ಇದೆ.",
+          kn: "मला कालपासून ताप आहे.",
+        },
+        {
+          en: "ಊಟದ ನಂತರ ಈ ಔಷಧ ತೆಗೆದುಕೊಳ್ಳಬೇಕೆ?",
+          kn: "हे औषध जेवणानंतर घ्यायचं का?",
+        },
+        {
+          en: "ದಯವಿಟ್ಟು ಡೋಸ್ ಮತ್ತೊಮ್ಮೆ ಹೇಳಿ.",
+          kn: "कृपया डोस पुन्हा सांगा.",
+        },
+      ],
+    },
+    {
+      id: "phone",
+      topic: "phone",
+      titleKn: "ಫೋನ್ ಮಾತು",
+      titleEn: "Phone Call",
+      phrases: [
+        {
+          en: "ನೀವು ನಿಧಾನವಾಗಿ ಮಾತನಾಡಿ, ದಯವಿಟ್ಟು.",
+          kn: "कृपया हळू बोला.",
+        },
+        {
+          en: "ಹತ್ತು ನಿಮಿಷದಲ್ಲಿ ನಾನು ಮತ್ತೆ ಕರೆ ಮಾಡುತ್ತೇನೆ.",
+          kn: "मी दहा मिनिटांनी परत फोन करेन.",
+        },
+        {
+          en: "ನನಗೆ ಸರಿಯಾಗಿ ಅರ್ಥವಾಗಲಿಲ್ಲ, ಮತ್ತೆ ಹೇಳಿ.",
+          kn: "मला नीट समजलं नाही, पुन्हा सांगा.",
+        },
+      ],
+    },
+  ],
+};
 
 const LESSON_LIMIT = 12;
 
@@ -98,6 +209,7 @@ const TOPIC_LABELS = {
 const UI_TEXT = {
   kn: {
     langToggle: "EN",
+    learningTrackLabel: "ಕಲಿಕೆಯ ದಿಕ್ಕು",
     heroTag: "ಕನ್ನಡ -> ಇಂಗ್ಲಿಷ್",
     heroSub: "ದಿನಕ್ಕೆ 15 ನಿಮಿಷ. ಕೇಳಿ, ಅರ್ಥಮಾಡಿ, ಮಾತನಾಡಿ.",
     progressTitle: "ಇವತ್ತಿನ ಪ್ರಗತಿ",
@@ -220,6 +332,8 @@ const UI_TEXT = {
     placementSavedPrefix: "ಪ್ಲೇಸ್ಮೆಂಟ್ ಸೇವ್",
     scenarioTitle: "ಸನ್ನಿವೇಶ ಅಭ್ಯಾಸ",
     scenarioHelp: "ಒಂದು ಸನ್ನಿವೇಶ ಆಯ್ಕೆ ಮಾಡಿ. ಪ್ರತಿಯೊಂದು ಟರ್ನ್‌ಗೆ ಉತ್ತರಿಸಿ, ನಂತರ Next turn ಒತ್ತಿ.",
+    scenarioUnsupported:
+      "ಸನ್ನಿವೇಶ ಅಭ್ಯಾಸ ಈಗ ಕನ್ನಡ -> ಇಂಗ್ಲಿಷ್ ಟ್ರ್ಯಾಕ್‌ಗೆ ಮಾತ್ರ ಲಭ್ಯ.",
     scenarioPromptLabel: "ಸ್ಥಿತಿ",
     scenarioStartBtn: "ಸನ್ನಿವೇಶ ಆರಂಭಿಸಿ",
     scenarioNextBtn: "ಮುಂದಿನ ಟರ್ನ್",
@@ -258,6 +372,7 @@ const UI_TEXT = {
   },
   en: {
     langToggle: "ಕನ್ನಡ",
+    learningTrackLabel: "Learning track",
     heroTag: "Kannada -> English",
     heroSub: "15 minutes daily. Listen, understand, and speak.",
     progressTitle: "Today Progress",
@@ -380,6 +495,7 @@ const UI_TEXT = {
     placementSavedPrefix: "Placement saved",
     scenarioTitle: "Scenario Practice",
     scenarioHelp: "Choose a situation, answer each turn, then click Next turn.",
+    scenarioUnsupported: "Scenario practice is currently available only for Kannada -> English.",
     scenarioPromptLabel: "Prompt",
     scenarioStartBtn: "Start scenario",
     scenarioNextBtn: "Next turn",
@@ -420,6 +536,10 @@ const UI_TEXT = {
 
 const els = {
   langToggle: document.querySelector("#lang-toggle"),
+  learningTrackLabel: document.querySelector("#learning-track-label"),
+  learningTrackSelect: document.querySelector("#learning-track"),
+  learningTrackOptKnEn: document.querySelector("#learning-track-opt-kn-en"),
+  learningTrackOptMrKn: document.querySelector("#learning-track-opt-mr-kn"),
   heroTag: document.querySelector("#hero-tag"),
   heroSub: document.querySelector("#hero-sub"),
   progressTitle: document.querySelector("#progress-title"),
@@ -551,6 +671,7 @@ const STORAGE_KEY = "amma_english_progress_v1";
 const UI_LANGUAGE_KEY = "amma_ui_language_v1";
 const LEARNER_STORAGE_KEY = "amma_learner_profile_v1";
 const REVIEW_STORAGE_KEY = "amma_review_state_v1";
+const LEARNING_TRACK_KEY = "amma_learning_track_v1";
 
 const SKILL_KEYS = [
   "speaking",
@@ -678,10 +799,12 @@ let micActive = false;
 let translationInFlight = false;
 let lessonGenerationInFlight = false;
 let inReviewMode = false;
-let lessons = DEFAULT_LESSONS.map((lesson) => ({
-  ...lesson,
-  phrases: lesson.phrases.map((phrase) => ({ ...phrase })),
-}));
+let learningTrack = loadLearningTrack();
+let lessonsByTrack = {
+  "kn-en": cloneLessons(DEFAULT_LESSONS_BY_TRACK["kn-en"]),
+  "mr-kn": cloneLessons(DEFAULT_LESSONS_BY_TRACK["mr-kn"]),
+};
+let lessons = lessonsByTrack[learningTrack] || cloneLessons(DEFAULT_LESSONS_BY_TRACK[DEFAULT_LEARNING_TRACK]);
 
 let uiLanguage = loadUiLanguage();
 let progress = loadProgress();
@@ -699,6 +822,55 @@ let tutorState = {
 };
 let tutorAudioEnabled = "speechSynthesis" in window;
 let tutorMicActive = false;
+
+function cloneLessons(list) {
+  return (Array.isArray(list) ? list : []).map((lesson) => ({
+    ...lesson,
+    phrases: Array.isArray(lesson?.phrases)
+      ? lesson.phrases.map((phrase) => ({ ...phrase }))
+      : [],
+  }));
+}
+
+function loadLearningTrack() {
+  const saved = String(window.localStorage.getItem(LEARNING_TRACK_KEY) || "").trim();
+  if (saved && LEARNING_TRACKS[saved]) return saved;
+  return DEFAULT_LEARNING_TRACK;
+}
+
+function saveLearningTrack() {
+  window.localStorage.setItem(LEARNING_TRACK_KEY, learningTrack);
+}
+
+function activeTrack() {
+  return LEARNING_TRACKS[learningTrack] || LEARNING_TRACKS[DEFAULT_LEARNING_TRACK];
+}
+
+function languageName(code) {
+  const pack = LANGUAGE_DISPLAY_NAMES[code];
+  if (!pack) return code;
+  return pack[uiLanguage] || pack.en || code;
+}
+
+function trackLabel(trackId) {
+  const track = LEARNING_TRACKS[trackId] || LEARNING_TRACKS[DEFAULT_LEARNING_TRACK];
+  return `${languageName(track.source)} -> ${languageName(track.target)}`;
+}
+
+function phraseTargetText(phrase) {
+  return String(phrase?.target || phrase?.en || "").trim();
+}
+
+function phraseSupportText(phrase) {
+  return String(phrase?.support || phrase?.kn || "").trim();
+}
+
+function applyScriptClass(el, langCode) {
+  if (!el) return;
+  el.classList.remove("kn", "mr");
+  if (langCode === "kn") el.classList.add("kn");
+  if (langCode === "mr") el.classList.add("mr");
+}
 
 function loadUiLanguage() {
   const saved = window.localStorage.getItem(UI_LANGUAGE_KEY);
@@ -964,9 +1136,111 @@ function ensurePlacementSelectOptions() {
   });
 }
 
+function lessonPhraseLabelText() {
+  const target = languageName(activeTrack().target);
+  return uiLanguage === "kn" ? `${target} ವಾಕ್ಯ` : `${target} phrase`;
+}
+
+function meaningButtonText(isShown) {
+  if (isShown) return t("hideMeaning");
+  const support = languageName(activeTrack().support);
+  return uiLanguage === "kn" ? `${support} ಅರ್ಥ` : `Show ${support} meaning`;
+}
+
+function typedPlaceholderText() {
+  const target = languageName(activeTrack().target);
+  return uiLanguage === "kn"
+    ? `ನೀವು ಹೇಳಿದ ${target} ವಾಕ್ಯವನ್ನು ಟೈಪ್ ಮಾಡಿ`
+    : `Type what you said in ${target}`;
+}
+
+function lessonPracticeHelpText() {
+  const target = languageName(activeTrack().target);
+  const support = languageName(activeTrack().support);
+  return uiLanguage === "kn"
+    ? `ಮೊದಲು ಕೇಳಿ, ನಂತರ ${target} ವಾಕ್ಯ ಹೇಳಿ. ಬೇಕಾದರೆ ${support} ಅರ್ಥ ನೋಡಿ.`
+    : `Listen first, repeat in ${target}, then reveal ${support} meaning if needed.`;
+}
+
+function practiceHelpText() {
+  const target = languageName(activeTrack().target);
+  return uiLanguage === "kn"
+    ? `ಮೈಕ್ ಬಳಸಿ ಅಥವಾ ಕೆಳಗೆ ಟೈಪ್ ಮಾಡಿ. ಪರದೆಯಲ್ಲಿನ ${target} ವಾಕ್ಯಕ್ಕೆ ಹತ್ತಿರವಾಗಿ ಹೇಳಿ.`
+    : `Use mic or type the sentence. Try to match the ${target} phrase exactly.`;
+}
+
+function tutorHelpText() {
+  const target = languageName(activeTrack().target);
+  const support = languageName(activeTrack().support);
+  return uiLanguage === "kn"
+    ? `ಟೈಪ್ ಮಾಡಬಹುದು ಅಥವಾ 'ಟ್ಯೂಟರ್ ಜೊತೆ ಮಾತನಾಡಿ' ಒತ್ತಿ. ಟ್ಯೂಟರ್ ${target}ನಲ್ಲಿ ಉತ್ತರಿಸಿ, ಸರಿಪಡಿಸಿ, ${support} ಹಿಂಟ್ ಕೊಡುತ್ತದೆ.`
+    : `Type if needed, or press Talk to tutor. Tutor replies in ${target}, corrects your line, and gives a short ${support} hint.`;
+}
+
+function tutorInputPlaceholderText() {
+  const target = languageName(activeTrack().target);
+  const support = languageName(activeTrack().support);
+  return uiLanguage === "kn"
+    ? `${support} ಅಥವಾ ${target} ನಲ್ಲಿ ಒಂದು ವಾಕ್ಯ ಬರೆಯಿರಿ`
+    : `Type a sentence in ${support} or ${target}`;
+}
+
+function tutorWelcomeText() {
+  if (learningTrack === "mr-kn") {
+    return uiLanguage === "kn"
+      ? "ನಮಸ್ಕಾರ. ನಾನು ನಿಮ್ಮ ಕನ್ನಡ ಟ್ಯೂಟರ್.\nಇವತ್ತು ಯಾವ ವಿಷಯದಲ್ಲಿ ಕನ್ನಡ ಅಭ್ಯಾಸ ಮಾಡೋಣ?"
+      : "Hi, I am your Kannada tutor.\nWhich real-life topic do you want to practice in Kannada today?";
+  }
+  return t("tutorWelcome");
+}
+
+function directionLabel(source, target) {
+  return `${languageName(source)} -> ${languageName(target)}`;
+}
+
+function updateLearningTrackOptions() {
+  els.learningTrackLabel.textContent = t("learningTrackLabel");
+  els.learningTrackOptKnEn.textContent = trackLabel("kn-en");
+  els.learningTrackOptMrKn.textContent = trackLabel("mr-kn");
+  els.learningTrackSelect.value = learningTrack;
+  els.heroTag.textContent = trackLabel(learningTrack);
+}
+
+function updateTranslateDirectionOptions() {
+  const track = activeTrack();
+  const forward = `${track.source}-${track.target}`;
+  const reverse = `${track.target}-${track.source}`;
+
+  els.directionOptKnEn.value = forward;
+  els.directionOptKnEn.textContent = directionLabel(track.source, track.target);
+  els.directionOptEnKn.value = reverse;
+  els.directionOptEnKn.textContent = directionLabel(track.target, track.source);
+
+  if (els.translateDirection.value !== forward && els.translateDirection.value !== reverse) {
+    els.translateDirection.value = forward;
+  }
+}
+
+function scenarioSupportedForTrack() {
+  return activeTrack().target === "en";
+}
+
+function updateScenarioAvailability() {
+  const supported = scenarioSupportedForTrack();
+  els.scenarioTopic.disabled = !supported;
+  els.scenarioAnswer.disabled = !supported;
+  els.scenarioStartBtn.disabled = !supported;
+  els.scenarioCheckBtn.disabled = !supported;
+  if (!supported) {
+    scenarioState.active = false;
+    els.scenarioNextBtn.disabled = true;
+    els.scenarioContext.textContent = t("scenarioUnsupported");
+  }
+}
+
 function applyUiLanguage() {
   els.langToggle.textContent = t("langToggle");
-  els.heroTag.textContent = t("heroTag");
+  updateLearningTrackOptions();
   els.heroSub.textContent = t("heroSub");
   els.progressTitle.textContent = t("progressTitle");
   els.progressHelp.textContent = t("progressHelp");
@@ -1012,19 +1286,19 @@ function applyUiLanguage() {
   els.startReviewBtn.textContent = t("reviewStartBtn");
   els.markEasyBtn.textContent = t("reviewMarkEasy");
   els.nextBtn.textContent = t("nextPhrase");
-  els.lessonPracticeHelp.textContent = t("lessonPracticeHelp");
-  els.phraseLabel.textContent = t("phraseLabel");
+  els.lessonPracticeHelp.textContent = lessonPracticeHelpText();
+  els.phraseLabel.textContent = lessonPhraseLabelText();
   els.playNormal.textContent = t("playAudio");
   els.playSlow.textContent = t("playSlow");
   els.practiceTitle.textContent = t("practiceTitle");
-  els.practiceHelp.textContent = t("practiceHelp");
+  els.practiceHelp.textContent = practiceHelpText();
   els.typedLabel.textContent = t("typedLabel");
-  els.typedAnswer.placeholder = t("typedPlaceholder");
+  els.typedAnswer.placeholder = typedPlaceholderText();
   els.checkTyped.textContent = t("checkAnswer");
   els.tutorTitle.textContent = t("tutorTitle");
-  els.tutorHelp.textContent = t("tutorHelp");
+  els.tutorHelp.textContent = tutorHelpText();
   els.tutorInputLabel.textContent = t("tutorInputLabel");
-  els.tutorInput.placeholder = t("tutorPlaceholder");
+  els.tutorInput.placeholder = tutorInputPlaceholderText();
   els.tutorSendBtn.textContent = t("tutorSendBtn");
   updateTutorMicButton();
   els.tutorUsePhraseBtn.textContent = t("tutorUsePhraseBtn");
@@ -1033,8 +1307,7 @@ function applyUiLanguage() {
   els.translateTitle.textContent = t("translateTitle");
   els.translateHelp.textContent = t("translateHelp");
   els.directionLabel.textContent = t("directionLabel");
-  els.directionOptKnEn.textContent = t("directionKnEn");
-  els.directionOptEnKn.textContent = t("directionEnKn");
+  updateTranslateDirectionOptions();
   els.translateTextLabel.textContent = t("translateTextLabel");
   els.translateInput.placeholder = t("translatePlaceholder");
   els.translateBtn.textContent = t("translateNow");
@@ -1067,6 +1340,7 @@ function applyUiLanguage() {
   renderTopicOptions();
   renderScenarioTopicOptions();
   ensurePlacementSelectOptions();
+  updateScenarioAvailability();
   if (!recognition) {
     els.micStatus.textContent = t("micUnsupported");
   } else if (micActive) {
@@ -1077,7 +1351,6 @@ function applyUiLanguage() {
   els.micBtn.textContent = micActive ? t("micStop") : t("micStart");
   renderLearnerPanel();
 }
-
 function renderLessons() {
   els.lessonList.innerHTML = "";
   lessons.forEach((lesson, idx) => {
@@ -1101,27 +1374,37 @@ function renderLessons() {
 function renderPhrase() {
   const lesson = lessons[lessonIdx];
   const phrase = getCurrentPhrase();
+  const target = phraseTargetText(phrase);
+  const support = phraseSupportText(phrase);
+  const track = activeTrack();
   els.lessonTitle.textContent =
     uiLanguage === "kn" ? `${lesson.titleKn} - ${lesson.titleEn}` : lesson.titleEn;
-  els.phraseEn.textContent = phrase.en;
-  els.phraseKn.textContent = phrase.kn;
+  els.phraseEn.textContent = target;
+  els.phraseKn.textContent = support;
+  applyScriptClass(els.phraseEn, track.target);
+  applyScriptClass(els.phraseKn, track.support);
   els.phraseKn.classList.add("hidden");
-  els.showMeaning.textContent = t("showMeaning");
+  els.showMeaning.textContent = meaningButtonText(false);
   els.typedAnswer.value = "";
   ensureReviewItem(phrase);
 }
 
 function phraseKey(phrase) {
-  return normalize(phrase.en);
+  return `${learningTrack}:${normalize(phraseTargetText(phrase), activeTrack().target)}`;
 }
 
 function ensureReviewItem(phrase) {
   const key = phraseKey(phrase);
   if (reviewState.items[key]) return;
+  const target = phraseTargetText(phrase);
+  const support = phraseSupportText(phrase);
   reviewState.items[key] = {
     key,
-    en: phrase.en,
-    kn: phrase.kn,
+    track: learningTrack,
+    target,
+    support,
+    en: target,
+    kn: support,
     ease: 2.3,
     intervalDays: 0,
     reps: 0,
@@ -1188,15 +1471,16 @@ function scheduleReview(phrase, quality) {
 function getDueReviewItems() {
   const now = Date.now();
   return Object.values(reviewState.items)
-    .filter((item) => item.dueAt <= now)
+    .filter((item) => item.dueAt <= now && (item.track || DEFAULT_LEARNING_TRACK) === learningTrack)
     .sort((a, b) => a.dueAt - b.dueAt);
 }
 
 function focusPhraseForReview(item) {
+  const targetText = String(item?.target || item?.en || "").trim();
   for (let li = 0; li < lessons.length; li += 1) {
     for (let pi = 0; pi < lessons[li].phrases.length; pi += 1) {
       const phrase = lessons[li].phrases[pi];
-      if (normalize(phrase.en) === normalize(item.en)) {
+      if (normalize(phraseTargetText(phrase), activeTrack().target) === normalize(targetText, activeTrack().target)) {
         lessonIdx = li;
         phraseIdx = pi;
         renderLessons();
@@ -1210,9 +1494,15 @@ function focusPhraseForReview(item) {
     id: `review-${Date.now().toString(36)}`,
     titleEn: "Review",
     titleKn: "ರಿವ್ಯೂ",
-    phrases: [{ en: item.en, kn: item.kn }],
+    phrases: [
+      {
+        en: targetText,
+        kn: String(item?.support || item?.kn || "").trim(),
+      },
+    ],
   };
   lessons = [reviewLesson, ...lessons].slice(0, LESSON_LIMIT);
+  lessonsByTrack[learningTrack] = lessons;
   lessonIdx = 0;
   phraseIdx = 0;
   renderLessons();
@@ -1232,9 +1522,9 @@ function applyLearningUpdate(score, quality) {
   saveLearnerProfile();
 }
 
-function analyzeAnswer(input, target, score) {
-  const inputTokens = normalize(input).split(" ").filter(Boolean);
-  const targetTokens = normalize(target).split(" ").filter(Boolean);
+function analyzeAnswer(input, target, score, languageCode) {
+  const inputTokens = normalize(input, languageCode).split(" ").filter(Boolean);
+  const targetTokens = normalize(target, languageCode).split(" ").filter(Boolean);
   const inputSet = new Set(inputTokens);
   const missing = targetTokens.filter((token) => !inputSet.has(token)).slice(0, 4);
   const extra = inputTokens.filter((token) => !targetTokens.includes(token)).slice(0, 3);
@@ -1265,17 +1555,23 @@ function speakPhrase(rate = 1) {
     return;
   }
   const phrase = getCurrentPhrase();
-  const utterance = new SpeechSynthesisUtterance(phrase.en);
-  utterance.lang = "en-US";
+  const utterance = new SpeechSynthesisUtterance(phraseTargetText(phrase));
+  utterance.lang = activeTrack().practiceLocale;
   utterance.rate = rate;
   window.speechSynthesis.cancel();
   window.speechSynthesis.speak(utterance);
 }
 
-function normalize(text) {
-  return text
-    .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, " ")
+function normalize(text, languageCode = activeTrack().target) {
+  const value = String(text || "").toLocaleLowerCase();
+  if (languageCode === "en") {
+    return value
+      .replace(/[^a-z0-9\s']/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+  return value
+    .replace(/[^\p{L}\p{N}\s]/gu, " ")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -1301,9 +1597,9 @@ function levenshtein(a, b) {
   return dp[rows - 1][cols - 1];
 }
 
-function similarityScore(input, target) {
-  const a = normalize(input);
-  const b = normalize(target);
+function similarityScore(input, target, languageCode) {
+  const a = normalize(input, languageCode);
+  const b = normalize(target, languageCode);
   if (!a || !b) return 0;
   const maxLen = Math.max(a.length, b.length);
   if (!maxLen) return 0;
@@ -1323,10 +1619,11 @@ function hideFeedback() {
 
 function evaluateAnswer(answerText) {
   const phrase = getCurrentPhrase();
-  const target = phrase.en;
-  const score = similarityScore(answerText, target);
+  const targetLanguage = activeTrack().target;
+  const target = phraseTargetText(phrase);
+  const score = similarityScore(answerText, target, targetLanguage);
   const quality = qualityFromScore(score);
-  const analysis = analyzeAnswer(answerText, target, score);
+  const analysis = analyzeAnswer(answerText, target, score, targetLanguage);
 
   progress.attempts += 1;
   if (quality >= 4) {
@@ -1368,11 +1665,17 @@ function validateLessonPayload(rawLesson) {
 
   const rawPhrases = Array.isArray(rawLesson.phrases) ? rawLesson.phrases : [];
   const phrases = rawPhrases
-    .map((item) => ({
-      en: String(item?.en || "").trim(),
-      kn: String(item?.kn || "").trim(),
-    }))
-    .filter((item) => item.en && item.kn)
+    .map((item) => {
+      const target = String(item?.target || item?.en || "").trim();
+      const support = String(item?.support || item?.kn || "").trim();
+      return {
+        en: target,
+        kn: support,
+        target,
+        support,
+      };
+    })
+    .filter((item) => item.target && item.support)
     .slice(0, 8);
 
   if (phrases.length < 3) {
@@ -1383,6 +1686,7 @@ function validateLessonPayload(rawLesson) {
     id: String(rawLesson.id || `gen-${Date.now().toString(36)}`),
     topic: String(rawLesson.topic || "generated"),
     level: String(rawLesson.level || "A1"),
+    learningTrack: String(rawLesson.learningTrack || learningTrack),
     titleEn: String(rawLesson.titleEn || "Generated Lesson").trim(),
     titleKn: String(rawLesson.titleKn || "ರಚಿಸಿದ ಪಾಠ").trim(),
     phrases,
@@ -1421,16 +1725,25 @@ function inferLessonTopic(lesson) {
 }
 
 function addGeneratedLesson(lesson) {
-  const topic = inferLessonTopic(lesson);
+  const normalizedLesson = {
+    ...lesson,
+    learningTrack,
+    phrases: lesson.phrases.map((phrase) => ({
+      ...phrase,
+      target: phraseTargetText(phrase),
+      support: phraseSupportText(phrase),
+    })),
+  };
+  const topic = inferLessonTopic(normalizedLesson);
 
   if (topic) {
     const firstMatchIndex = lessons.findIndex((item) => inferLessonTopic(item) === topic);
     const filtered = lessons.filter((item) => inferLessonTopic(item) !== topic);
 
     const merged = {
-      ...lesson,
+      ...normalizedLesson,
       topic,
-      id: firstMatchIndex >= 0 ? lessons[firstMatchIndex].id : lesson.id,
+      id: firstMatchIndex >= 0 ? lessons[firstMatchIndex].id : normalizedLesson.id,
     };
 
     if (firstMatchIndex >= 0) {
@@ -1443,12 +1756,13 @@ function addGeneratedLesson(lesson) {
       lessonIdx = 0;
     }
   } else {
-    lessons = [lesson, ...lessons.filter((item) => item.id !== lesson.id)].slice(0, LESSON_LIMIT);
+    lessons = [normalizedLesson, ...lessons.filter((item) => item.id !== normalizedLesson.id)].slice(0, LESSON_LIMIT);
     lessonIdx = 0;
   }
 
   phraseIdx = 0;
-  lesson.phrases.forEach((phrase) => ensureReviewItem(phrase));
+  lessonsByTrack[learningTrack] = lessons;
+  normalizedLesson.phrases.forEach((phrase) => ensureReviewItem(phrase));
   saveReviewState();
 }
 
@@ -1471,6 +1785,7 @@ async function generateLessonNow() {
         level,
         count,
         uiLanguage,
+        learningTrack,
       }),
     });
 
@@ -1595,6 +1910,11 @@ function renderScenarioTurn() {
 }
 
 function startScenario() {
+  if (!scenarioSupportedForTrack()) {
+    scenarioState.active = false;
+    els.scenarioContext.textContent = t("scenarioUnsupported");
+    return;
+  }
   scenarioState = {
     active: true,
     topic: els.scenarioTopic.value,
@@ -1607,6 +1927,7 @@ function startScenario() {
 
 function checkScenarioTurn() {
   if (!scenarioState.active) return;
+  if (!scenarioSupportedForTrack()) return;
   const scenario = SCENARIO_BANK[scenarioState.topic] || SCENARIO_BANK.shopping;
   const turn = scenario.turns[scenarioState.turnIndex];
   if (!turn) return;
@@ -1617,9 +1938,9 @@ function checkScenarioTurn() {
     return;
   }
 
-  const score = similarityScore(answer, turn.exemplar);
-  const normalized = normalize(answer);
-  const keywordHits = turn.keywords.filter((kw) => normalized.includes(normalize(kw))).length;
+  const score = similarityScore(answer, turn.exemplar, "en");
+  const normalized = normalize(answer, "en");
+  const keywordHits = turn.keywords.filter((kw) => normalized.includes(normalize(kw, "en"))).length;
   const pass = score >= 0.55 || keywordHits >= 2;
 
   if (pass) {
@@ -1641,6 +1962,7 @@ function checkScenarioTurn() {
 
 function nextScenarioTurn() {
   if (!scenarioState.active) return;
+  if (!scenarioSupportedForTrack()) return;
   const scenario = SCENARIO_BANK[scenarioState.topic] || SCENARIO_BANK.shopping;
   scenarioState.turnIndex += 1;
   if (scenarioState.turnIndex >= scenario.turns.length) {
@@ -1659,15 +1981,21 @@ function nextScenarioTurn() {
 }
 
 function activeTranslateDirection() {
-  const value = els.translateDirection.value;
-  if (value === "en-kn") return { source: "en", target: "kn" };
-  return { source: "kn", target: "en" };
+  const value = String(els.translateDirection.value || "").trim().toLowerCase();
+  const [source, target] = value.split("-");
+  const allowed = new Set(["en", "kn", "mr"]);
+  if (allowed.has(source) && allowed.has(target) && source !== target) {
+    return { source, target };
+  }
+  const track = activeTrack();
+  return { source: track.source, target: track.target };
 }
 
-function setTranslateResult(meta, output, isError = false) {
+function setTranslateResult(meta, output, isError = false, langCode = null) {
   els.translateMeta.textContent = meta;
   els.translateOutput.textContent = output;
   els.translateOutput.style.color = isError ? "#a93b21" : "var(--ink)";
+  applyScriptClass(els.translateOutput, langCode);
   els.translateResult.classList.remove("hidden");
 }
 
@@ -1709,7 +2037,7 @@ function updateTutorAudioButton() {
 function speakTutorReply(text) {
   if (!tutorAudioEnabled || !("speechSynthesis" in window)) return;
   const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = "en-US";
+  utterance.lang = activeTrack().practiceLocale;
   utterance.rate = 0.95;
   window.speechSynthesis.cancel();
   window.speechSynthesis.speak(utterance);
@@ -1735,12 +2063,13 @@ function appendTutorMessage(role, content, options = {}) {
 }
 
 function resetTutorChat() {
+  const welcome = tutorWelcomeText();
   tutorState.history = [];
   els.tutorLog.innerHTML = "";
-  appendTutorMessage("assistant", t("tutorWelcome"), { speak: false });
+  appendTutorMessage("assistant", welcome, { speak: false });
   tutorState.history.push({
     role: "assistant",
-    content: t("tutorWelcome"),
+    content: welcome,
   });
   setTutorStatus(t("tutorStatusReady"));
   updateTutorMicButton();
@@ -1749,12 +2078,20 @@ function resetTutorChat() {
 
 function useLessonPhraseForTutor() {
   const phrase = getCurrentPhrase();
-  els.tutorInput.value = phrase?.en || "";
+  els.tutorInput.value = phraseTargetText(phrase);
   els.tutorInput.focus();
 }
 
 function localTutorFallback(userMessage) {
-  const safe = userMessage.trim() || "I want to improve my English.";
+  const safe = userMessage.trim() || "I want to improve.";
+  if (learningTrack === "mr-kn") {
+    return [
+      `ಚೆನ್ನಾಗಿದೆ. ಹೀಗೆ ಹೇಳಿ: "${safe}"`,
+      "Better Kannada: ಚಿಕ್ಕ ಮತ್ತು ಸ್ಪಷ್ಟ ವಾಕ್ಯ ಬಳಸಿ.",
+      "Marathi hint: छोटे आणि स्पष्ट वाक्य बोला.",
+      "Follow-up: ಇದೇ ವಿಷಯದ ಇನ್ನೊಂದು ಕನ್ನಡ ವಾಕ್ಯ ಹೇಳುತ್ತೀರಾ?",
+    ].join("\n");
+  }
   if (uiLanguage === "kn") {
     return [
       `Good attempt. Try: "${safe}"`,
@@ -1793,7 +2130,8 @@ async function sendTutorMessage() {
         uiLanguage,
         level: learner.level || "A1",
         topic: inferLessonTopic(activeLesson) || "introduction",
-        currentPhrase: activePhrase?.en || "",
+        currentPhrase: phraseTargetText(activePhrase),
+        learningTrack,
         history: tutorState.history.slice(-8),
       }),
     });
@@ -1825,7 +2163,10 @@ async function sendTutorMessage() {
 function useCurrentLessonPhrase() {
   const phrase = getCurrentPhrase();
   const { source } = activeTranslateDirection();
-  els.translateInput.value = source === "kn" ? phrase.kn : phrase.en;
+  const track = activeTrack();
+  const target = phraseTargetText(phrase);
+  const support = phraseSupportText(phrase);
+  els.translateInput.value = source === track.target ? target : support;
   els.translateInput.focus();
 }
 
@@ -1854,14 +2195,14 @@ async function translateNow() {
 
   const text = els.translateInput.value.trim();
   if (!text) {
-    setTranslateResult(t("translateMissingTitle"), t("translateMissingBody"), true);
+    setTranslateResult(t("translateMissingTitle"), t("translateMissingBody"), true, null);
     return;
   }
 
   const { source, target } = activeTranslateDirection();
   translationInFlight = true;
   els.translateBtn.disabled = true;
-  setTranslateResult(t("translatingTitle"), t("translatingBody"));
+  setTranslateResult(t("translatingTitle"), t("translatingBody"), false, target);
 
   try {
     const response = await fetch("/api/translate", {
@@ -1883,13 +2224,15 @@ async function translateNow() {
     setTranslateResult(
       `${t("providerPrefix")}: ${data.provider}${fallbackTag}`,
       data.translatedText,
-      false
+      false,
+      target
     );
   } catch (err) {
     setTranslateResult(
       t("translateFailedTitle"),
       err instanceof Error ? err.message : String(err),
-      true
+      true,
+      null
     );
   } finally {
     translationInFlight = false;
@@ -1904,12 +2247,16 @@ let recognition = null;
 let tutorRecognition = null;
 
 function tutorRecognitionLang() {
-  return uiLanguage === "kn" ? "kn-IN" : "en-IN";
+  return activeTrack().supportLocale;
+}
+
+function practiceRecognitionLang() {
+  return activeTrack().practiceLocale;
 }
 
 if (SpeechRecognitionAPI) {
   recognition = new SpeechRecognitionAPI();
-  recognition.lang = "en-US";
+  recognition.lang = practiceRecognitionLang();
   recognition.interimResults = false;
   recognition.maxAlternatives = 1;
 
@@ -1972,12 +2319,58 @@ if (SpeechRecognitionAPI) {
   els.tutorMicBtn.textContent = t("tutorMicUnsupported");
 }
 
+function syncRecognitionLanguage() {
+  if (recognition && !micActive) {
+    recognition.lang = practiceRecognitionLang();
+  }
+  if (tutorRecognition && !tutorMicActive) {
+    tutorRecognition.lang = tutorRecognitionLang();
+  }
+}
+
+function switchLearningTrack(nextTrack) {
+  if (!LEARNING_TRACKS[nextTrack] || nextTrack === learningTrack) return;
+
+  if (micActive && recognition) recognition.stop();
+  if (tutorMicActive && tutorRecognition) tutorRecognition.stop();
+
+  learningTrack = nextTrack;
+  saveLearningTrack();
+
+  if (!lessonsByTrack[learningTrack]) {
+    lessonsByTrack[learningTrack] = cloneLessons(
+      DEFAULT_LESSONS_BY_TRACK[learningTrack] || DEFAULT_LESSONS_BY_TRACK[DEFAULT_LEARNING_TRACK]
+    );
+  }
+  lessons = lessonsByTrack[learningTrack];
+  lessonIdx = 0;
+  phraseIdx = 0;
+  inReviewMode = false;
+  syncRecognitionLanguage();
+
+  applyUiLanguage();
+  renderLessons();
+  renderPhrase();
+  hideFeedback();
+  els.generateStatus.textContent = t("genReady");
+  els.reviewStatus.textContent = t("reviewReady");
+  els.scenarioFeedbackCard.classList.add("hidden");
+  if (scenarioSupportedForTrack()) {
+    scenarioState.active = false;
+    els.scenarioContext.textContent = scenarioContextText(els.scenarioTopic.value);
+  } else {
+    els.scenarioContext.textContent = t("scenarioUnsupported");
+  }
+  resetTutorChat();
+  loadProviderStatus();
+}
+
 els.nextBtn.addEventListener("click", nextPhrase);
 
 els.showMeaning.addEventListener("click", () => {
   const isHidden = els.phraseKn.classList.contains("hidden");
   els.phraseKn.classList.toggle("hidden", !isHidden);
-  els.showMeaning.textContent = isHidden ? t("hideMeaning") : t("showMeaning");
+  els.showMeaning.textContent = meaningButtonText(isHidden);
 });
 
 els.playNormal.addEventListener("click", () => speakPhrase(1));
@@ -2050,6 +2443,7 @@ els.scenarioStartBtn.addEventListener("click", startScenario);
 els.scenarioCheckBtn.addEventListener("click", checkScenarioTurn);
 els.scenarioNextBtn.addEventListener("click", nextScenarioTurn);
 els.scenarioTopic.addEventListener("change", () => {
+  if (!scenarioSupportedForTrack()) return;
   if (!scenarioState.active) {
     els.scenarioContext.textContent = scenarioContextText(els.scenarioTopic.value);
   }
@@ -2067,7 +2461,9 @@ els.langToggle.addEventListener("click", () => {
   renderDate();
   renderLessons();
   renderPhrase();
-  if (scenarioState.active) {
+  if (!scenarioSupportedForTrack()) {
+    els.scenarioContext.textContent = t("scenarioUnsupported");
+  } else if (scenarioState.active) {
     renderScenarioTurn();
   } else {
     els.scenarioContext.textContent = scenarioContextText(els.scenarioTopic.value);
@@ -2076,6 +2472,10 @@ els.langToggle.addEventListener("click", () => {
     setTutorStatus(t("tutorStatusReady"));
   }
   loadProviderStatus();
+});
+
+els.learningTrackSelect.addEventListener("change", () => {
+  switchLearningTrack(els.learningTrackSelect.value);
 });
 
 els.translateBtn.addEventListener("click", translateNow);
@@ -2095,6 +2495,10 @@ lessons.forEach((lesson) => lesson.phrases.forEach((phrase) => ensureReviewItem(
 saveReviewState();
 renderLearnerPanel();
 els.reviewStatus.textContent = t("reviewReady");
-els.scenarioContext.textContent = scenarioContextText(els.scenarioTopic.value);
+if (scenarioSupportedForTrack()) {
+  els.scenarioContext.textContent = scenarioContextText(els.scenarioTopic.value);
+} else {
+  els.scenarioContext.textContent = t("scenarioUnsupported");
+}
 resetTutorChat();
 loadProviderStatus();

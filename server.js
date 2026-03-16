@@ -28,11 +28,30 @@ const MIME_TYPES = {
 const LANGUAGE_NAMES = {
   en: "English",
   kn: "Kannada",
+  mr: "Marathi",
 };
 
 const SARVAM_LANG_CODE = {
   en: "en-IN",
   kn: "kn-IN",
+  mr: "mr-IN",
+};
+
+const LEARNING_TRACKS = {
+  "kn-en": {
+    id: "kn-en",
+    source: "kn",
+    target: "en",
+    support: "kn",
+    audience: "adult Kannada speakers learning English for daily life",
+  },
+  "mr-kn": {
+    id: "mr-kn",
+    source: "mr",
+    target: "kn",
+    support: "mr",
+    audience: "adult Marathi speakers learning Kannada for daily life",
+  },
 };
 
 const LESSON_GENERATION_TOPICS = {
@@ -50,6 +69,7 @@ const lessonCache = new Map();
 const LESSON_GENERATOR_VERSION = "v2";
 const TUTOR_CHAT_VERSION = "v1";
 const TUTOR_HISTORY_LIMIT = 8;
+const DEFAULT_CHAT_MODEL = "sarvam-105b";
 
 const LEVEL_RULES = {
   A1: {
@@ -364,7 +384,7 @@ async function fetchWithTimeout(url, options = {}, timeoutMs = 15000) {
 
 function normalizeDirection(value, fallback) {
   const v = String(value || fallback || "").trim().toLowerCase();
-  return v === "en" || v === "kn" ? v : null;
+  return v === "en" || v === "kn" || v === "mr" ? v : null;
 }
 
 function configuredProviderOrder() {
@@ -461,6 +481,16 @@ function parseCount(value) {
   if (!Number.isFinite(n)) return null;
   const clamped = Math.max(3, Math.min(8, Math.floor(n)));
   return clamped;
+}
+
+function parseLearningTrack(value) {
+  const track = String(value || "").trim().toLowerCase();
+  if (track in LEARNING_TRACKS) return track;
+  return "kn-en";
+}
+
+function learningTrackConfig(track) {
+  return LEARNING_TRACKS[track] || LEARNING_TRACKS["kn-en"];
 }
 
 function parseUiLanguage(value) {
@@ -695,32 +725,98 @@ function selectCuratedEnglishPhrases(topic, level, count) {
   return selected.slice(0, count);
 }
 
-async function translateEnglishPhrasesToKannada(phrases) {
-  const results = await Promise.all(
+function uniqueEnglishCandidates(primary, topic, level, count) {
+  const seen = new Set();
+  const out = [];
+  const add = (value) => {
+    const en = normalizeEnglish(value);
+    const key = canonicalEnglish(en);
+    if (!en || !key || seen.has(key)) return;
+    seen.add(key);
+    out.push(en);
+  };
+
+  for (const value of primary || []) add(value);
+  for (const value of selectCuratedEnglishPhrases(topic, level, count * 3)) add(value);
+  return out;
+}
+
+async function translateEnglishPhrasesToLanguageMap(phrases, target) {
+  const pairs = await Promise.all(
     phrases.map(async (en) => {
-      const translation = await attemptTranslation({
-        text: en,
-        source: "en",
-        target: "kn",
-      });
-      return {
-        en,
-        kn: normalizeKannada(translation.translatedText),
-      };
+      try {
+        const translation = await attemptTranslation({
+          text: en,
+          source: "en",
+          target,
+        });
+        const key = canonicalEnglish(en);
+        const text = target === "kn"
+          ? normalizeKannada(translation.translatedText)
+          : normalizeSpace(translation.translatedText);
+        if (!key || !text) return null;
+        return [key, text];
+      } catch {
+        return null;
+      }
     })
   );
 
-  return results.filter((item) => item.en && item.kn && item.kn.length >= 4);
+  const out = new Map();
+  for (const pair of pairs) {
+    if (!pair) continue;
+    const [key, text] = pair;
+    if (!out.has(key)) out.set(key, text);
+  }
+  return out;
 }
 
-async function generateLessonFromCurated({ topic, level, count, uiLanguage }) {
-  const selectedEnglish = selectCuratedEnglishPhrases(topic, level, count);
-  if (selectedEnglish.length < Math.min(3, count)) {
-    throw new Error("Curated fallback has insufficient phrases");
+async function buildLessonPhrasesForTrack(englishCandidates, learningTrack) {
+  const track = learningTrackConfig(learningTrack);
+  const targetMap = track.target === "en"
+    ? null
+    : await translateEnglishPhrasesToLanguageMap(englishCandidates, track.target);
+  const supportMap = await translateEnglishPhrasesToLanguageMap(englishCandidates, track.support);
+  const phrases = [];
+
+  for (const en of englishCandidates) {
+    const key = canonicalEnglish(en);
+    if (!key) continue;
+
+    let targetText = "";
+    if (track.target === "en") {
+      targetText = normalizeEnglish(en);
+    } else if (track.target === "kn") {
+      targetText = normalizeKannada(targetMap?.get(key) || "");
+    } else {
+      targetText = normalizeSpace(targetMap?.get(key) || "");
+    }
+
+    if (!targetText) continue;
+    const supportText = normalizeSpace(supportMap.get(key) || en);
+    if (!supportText) continue;
+
+    phrases.push({
+      en: targetText,
+      kn: supportText,
+      target: targetText,
+      support: supportText,
+    });
   }
 
-  let phrases = await translateEnglishPhrasesToKannada(selectedEnglish);
-  phrases = await topUpPhrasesFromCurated({ topic, level, count, phrases });
+  return phrases;
+}
+
+async function generateLessonFromCurated({
+  topic,
+  level,
+  count,
+  uiLanguage,
+  learningTrack,
+}) {
+  const selectedEnglish = selectCuratedEnglishPhrases(topic, level, count);
+  const englishCandidates = uniqueEnglishCandidates(selectedEnglish, topic, level, count);
+  const phrases = await buildLessonPhrasesForTrack(englishCandidates, learningTrack);
   if (phrases.length < Math.min(3, count)) {
     throw new Error("Curated fallback translation failed");
   }
@@ -730,6 +826,7 @@ async function generateLessonFromCurated({ topic, level, count, uiLanguage }) {
     id: makeLessonId(topic),
     topic,
     level,
+    learningTrack,
     titleEn: title.en,
     titleKn: title.kn,
     phrases: phrases.slice(0, count),
@@ -738,30 +835,8 @@ async function generateLessonFromCurated({ topic, level, count, uiLanguage }) {
   };
 }
 
-async function topUpPhrasesFromCurated({ topic, level, count, phrases }) {
-  if (phrases.length >= count) return phrases.slice(0, count);
-
-  const existing = new Set(phrases.map((item) => canonicalEnglish(item.en)));
-  const curatedEnglish = selectCuratedEnglishPhrases(topic, level, count * 2);
-  const needed = count - phrases.length;
-  const extraEnglish = [];
-
-  for (const en of curatedEnglish) {
-    if (extraEnglish.length >= needed) break;
-    const key = canonicalEnglish(en);
-    if (!key || existing.has(key)) continue;
-    existing.add(key);
-    extraEnglish.push(en);
-  }
-
-  if (!extraEnglish.length) return phrases.slice(0, count);
-
-  const translatedExtra = await translateEnglishPhrasesToKannada(extraEnglish);
-  return [...phrases, ...translatedExtra].slice(0, count);
-}
-
-function cachedLessonKey({ topic, level, count, uiLanguage }) {
-  return [LESSON_GENERATOR_VERSION, topic, level, count, uiLanguage].join("|");
+function cachedLessonKey({ topic, level, count, uiLanguage, learningTrack }) {
+  return [LESSON_GENERATOR_VERSION, learningTrack, topic, level, count, uiLanguage].join("|");
 }
 
 function makeLessonId(topic) {
@@ -806,7 +881,14 @@ async function fetchSarvamChatCompletion(body, apiKey) {
   return response;
 }
 
-async function generateLessonWithSarvam({ topic, level, count, uiLanguage }) {
+async function generateLessonWithSarvam({
+  topic,
+  level,
+  count,
+  uiLanguage,
+  learningTrack,
+}) {
+  const track = learningTrackConfig(learningTrack);
   const apiKey = process.env.SARVAM_API_KEY;
   if (!apiKey) {
     const fallbackLesson = await generateLessonFromCurated({
@@ -814,12 +896,13 @@ async function generateLessonWithSarvam({ topic, level, count, uiLanguage }) {
       level,
       count,
       uiLanguage,
+      learningTrack,
     });
     fallbackLesson.generationErrors = ["Sarvam key missing"];
     return fallbackLesson;
   }
 
-  const model = process.env.SARVAM_CHAT_MODEL || "sarvam-30b";
+  const model = process.env.SARVAM_CHAT_MODEL || DEFAULT_CHAT_MODEL;
   const topicTitle = lessonTopicTitle(topic);
   const rule = levelRule(level);
   const intents = TOPIC_INTENTS[topic] || TOPIC_INTENTS.introduction;
@@ -829,10 +912,10 @@ async function generateLessonWithSarvam({ topic, level, count, uiLanguage }) {
     const candidateCount = Math.min(14, Math.max(count * 2 + 2 - attempt, count + 2));
 
     const systemPrompt = [
-      "You design realistic spoken-English drills for adult Kannada speakers.",
+      "You design realistic spoken-language drills for daily-life conversation practice.",
       "Output strict JSON only.",
       'Schema: {"phrases":[{"en":"string","intent":"string"}]}',
-      "Return only English in 'en' field. Do not include Kannada translation.",
+      "Return only English in 'en' field. Do not include translations.",
       "No markdown, no explanations, no chain-of-thought.",
     ].join(" ");
 
@@ -841,7 +924,7 @@ async function generateLessonWithSarvam({ topic, level, count, uiLanguage }) {
       `Target CEFR level: ${level}.`,
       `Word limit per phrase: ${rule.minWords}-${rule.maxWords}.`,
       `Level style: ${rule.guidance}`,
-      "Audience context: Indian adult learner using English in real daily life.",
+      `Audience context: ${track.audience}.`,
       "Avoid textbook-only lines and overused greetings.",
       "Include a mix of requests, questions, and statements.",
       `Intents to cover: ${intents.join(", ")}.`,
@@ -875,8 +958,8 @@ async function generateLessonWithSarvam({ topic, level, count, uiLanguage }) {
 
       const parsedItems = parseGeneratedPhrasePayload(rawContent);
       const selectedEnglish = selectEnglishPhrases(parsedItems, { topic, level, count });
-      let phrases = await translateEnglishPhrasesToKannada(selectedEnglish);
-      phrases = await topUpPhrasesFromCurated({ topic, level, count, phrases });
+      const englishCandidates = uniqueEnglishCandidates(selectedEnglish, topic, level, count);
+      const phrases = await buildLessonPhrasesForTrack(englishCandidates, learningTrack);
       if (phrases.length < Math.min(3, count)) {
         throw new Error("Could not translate enough generated phrases");
       }
@@ -886,6 +969,7 @@ async function generateLessonWithSarvam({ topic, level, count, uiLanguage }) {
         id: makeLessonId(topic),
         topic,
         level,
+        learningTrack,
         titleEn: title.en,
         titleKn: title.kn,
         phrases: phrases.slice(0, count),
@@ -903,6 +987,7 @@ async function generateLessonWithSarvam({ topic, level, count, uiLanguage }) {
       level,
       count,
       uiLanguage,
+      learningTrack,
     });
     fallbackLesson.generationErrors = errors;
     return fallbackLesson;
@@ -927,8 +1012,49 @@ function normalizeTutorReply(text) {
   return lines.join("\n").slice(0, 900);
 }
 
-function fallbackTutorReply({ message, uiLanguage }) {
-  const safe = normalizeTutorMessage(message, 160) || "I want to improve my English.";
+function looksLikeInternalTutorLine(line) {
+  const lower = String(line || "").trim().toLowerCase();
+  if (!lower) return true;
+  return (
+    lower.startsWith("analysis:") ||
+    lower.startsWith("reasoning:") ||
+    lower.startsWith("thought:") ||
+    lower.startsWith("thinking:") ||
+    lower.startsWith("internal:") ||
+    lower.includes("chain of thought") ||
+    lower.startsWith("<think>") ||
+    lower.startsWith("let's think")
+  );
+}
+
+function sanitizeTutorReply(text) {
+  const cleaned = normalizeTutorReply(text)
+    .replace(/<think>[\s\S]*?<\/think>/gi, "")
+    .replace(/^\s*```[\s\S]*?```\s*$/gim, "")
+    .trim();
+  if (!cleaned) return "";
+
+  const lines = cleaned
+    .split("\n")
+    .map((line) => normalizeSpace(line.replace(/^[-*]\s+/, "")))
+    .filter(Boolean)
+    .filter((line) => !looksLikeInternalTutorLine(line))
+    .slice(0, 4);
+
+  return lines.join("\n").slice(0, 900);
+}
+
+function fallbackTutorReply({ message, uiLanguage, learningTrack }) {
+  const safe = normalizeTutorMessage(message, 160) || "I want to improve.";
+  const track = learningTrackConfig(learningTrack);
+  if (track.id === "mr-kn") {
+    return [
+      `ಚೆನ್ನಾಗಿದೆ. ಹೀಗೆ ಹೇಳಬಹುದು: "${safe}"`,
+      "Better Kannada: ಚಿಕ್ಕ ಮತ್ತು ಸ್ಪಷ್ಟ ವಾಕ್ಯ ಬಳಸಿ.",
+      "Marathi hint: छोटे आणि स्पष्ट वाक्य बोला.",
+      "Follow-up: ಇದೇ ವಿಷಯದ ಇನ್ನೊಂದು ಕನ್ನಡ ವಾಕ್ಯ ಹೇಳುತ್ತೀರಾ?",
+    ].join("\n");
+  }
   if (uiLanguage === "kn") {
     return [
       `Good attempt. Try: "${safe}"`,
@@ -950,33 +1076,34 @@ async function generateTutorReplyWithSarvam({
   topic,
   currentPhrase,
   uiLanguage,
+  learningTrack,
 }) {
   const apiKey = process.env.SARVAM_API_KEY;
   if (!apiKey) {
     throw new Error("Sarvam key missing");
   }
 
-  const model = process.env.SARVAM_TUTOR_MODEL || process.env.SARVAM_CHAT_MODEL || "sarvam-30b";
+  const track = learningTrackConfig(learningTrack);
+  const model = process.env.SARVAM_TUTOR_MODEL || process.env.SARVAM_CHAT_MODEL || DEFAULT_CHAT_MODEL;
   const topicTitle = lessonTopicTitle(topic);
-  const languageHint =
-    uiLanguage === "kn"
-      ? "Include exactly one Kannada hint line prefixed with 'Kannada hint:'."
-      : "Do not include Kannada text.";
-  const currentPhraseHint = normalizeEnglish(currentPhrase)
-    ? `Current lesson phrase: ${normalizeEnglish(currentPhrase)}`
+  const targetLanguageName = LANGUAGE_NAMES[track.target] || "target language";
+  const supportLanguageName = LANGUAGE_NAMES[track.support] || "support language";
+  const currentPhraseHint = normalizeTutorMessage(currentPhrase, 180)
+    ? `Current lesson phrase (${targetLanguageName}): ${normalizeTutorMessage(currentPhrase, 180)}`
     : "Current lesson phrase: none";
 
   const systemPrompt = [
-    "You are Amma English Coach, a patient spoken-English tutor for adult Kannada speakers.",
+    "You are Amma Language Coach, a patient tutor for adults.",
+    `Learning track: ${supportLanguageName} -> ${targetLanguageName}.`,
     "Keep the response short and practical for CEFR level",
     level + ".",
     "Response format rules:",
-    "1) First line: direct tutor response in simple English.",
-    "2) Second line: Better English: <corrected sentence>.",
-    "3) Third line: Follow-up: <a clear next question>.",
-    languageHint,
-    "Do not use markdown bullets, tables, or JSON.",
-    "Maximum 85 words total.",
+    `1) First line: direct tutor response in simple ${targetLanguageName}.`,
+    `2) Second line: Better ${targetLanguageName}: <corrected sentence>.`,
+    `3) Third line: ${supportLanguageName} hint: <very short hint in ${supportLanguageName}>.`,
+    `4) Fourth line: Follow-up: <short next question in ${targetLanguageName}>.`,
+    "Do not use markdown bullets, tables, JSON, code fences, or reasoning text.",
+    "Maximum 90 words total.",
   ].join(" ");
 
   const sanitizedHistory = sanitizeTutorHistory(history);
@@ -996,6 +1123,7 @@ async function generateTutorReplyWithSarvam({
     role: "user",
     content: [
       `Topic: ${topicTitle.en}.`,
+      `UI language: ${uiLanguage === "kn" ? "Kannada" : "English"}.`,
       currentPhraseHint,
       `Learner message: ${normalizedMessage}`,
     ].join("\n"),
@@ -1017,8 +1145,8 @@ async function generateTutorReplyWithSarvam({
   }
 
   const data = await response.json();
-  const reply = normalizeTutorReply(extractSarvamMessageText(data?.choices?.[0]?.message));
-  if (!reply) {
+  const reply = sanitizeTutorReply(extractSarvamMessageText(data?.choices?.[0]?.message));
+  if (!reply || /^[\[{]/.test(reply)) {
     throw new Error("Sarvam tutor chat returned empty response");
   }
   return reply;
@@ -1223,7 +1351,7 @@ async function handleTranslate(req, res) {
   if (!text) return badRequest(res, "text is required");
   if (text.length > 1800) return badRequest(res, "text must be 1800 chars or fewer");
   if (!source || !target || source === target) {
-    return badRequest(res, "source/target must be en or kn and must differ");
+    return badRequest(res, "source/target must be en, kn, or mr and must differ");
   }
 
   try {
@@ -1255,7 +1383,8 @@ async function handleTutorChat(req, res) {
   const uiLanguage = parseUiLanguage(payload?.uiLanguage);
   const level = parseLevel(payload?.level) || "A1";
   const topic = parseTopic(payload?.topic) || "introduction";
-  const currentPhrase = normalizeEnglish(String(payload?.currentPhrase || "")).slice(0, 180);
+  const learningTrack = parseLearningTrack(payload?.learningTrack);
+  const currentPhrase = normalizeTutorMessage(payload?.currentPhrase, 180);
   const history = sanitizeTutorHistory(payload?.history);
 
   if (!message) return badRequest(res, "message is required");
@@ -1268,6 +1397,7 @@ async function handleTutorChat(req, res) {
       topic,
       currentPhrase,
       uiLanguage,
+      learningTrack,
     });
     return json(res, 200, {
       reply,
@@ -1277,7 +1407,7 @@ async function handleTutorChat(req, res) {
     });
   } catch (err) {
     return json(res, 200, {
-      reply: fallbackTutorReply({ message, uiLanguage }),
+      reply: fallbackTutorReply({ message, uiLanguage, learningTrack }),
       provider: "local-fallback",
       fallbackUsed: true,
       version: TUTOR_CHAT_VERSION,
@@ -1299,8 +1429,9 @@ async function handleGenerateLesson(req, res) {
   const level = parseLevel(payload?.level) || "A1";
   const count = parseCount(payload?.count) || 5;
   const uiLanguage = parseUiLanguage(payload?.uiLanguage);
+  const learningTrack = parseLearningTrack(payload?.learningTrack);
 
-  const cacheKey = cachedLessonKey({ topic, level, count, uiLanguage });
+  const cacheKey = cachedLessonKey({ topic, level, count, uiLanguage, learningTrack });
   const now = Date.now();
   const cached = lessonCache.get(cacheKey);
   if (cached && now - cached.createdAt <= LESSON_CACHE_TTL_MS) {
@@ -1318,6 +1449,7 @@ async function handleGenerateLesson(req, res) {
       level,
       count,
       uiLanguage,
+      learningTrack,
     });
 
     lessonCache.set(cacheKey, { lesson, createdAt: now });
@@ -1344,14 +1476,21 @@ function handleProviders(res) {
     lessonGeneration: {
       sarvamChat: Boolean(process.env.SARVAM_API_KEY),
       curatedFallback: true,
-      model: process.env.SARVAM_CHAT_MODEL || "sarvam-30b",
+      model: process.env.SARVAM_CHAT_MODEL || DEFAULT_CHAT_MODEL,
       version: LESSON_GENERATOR_VERSION,
       topics: Object.keys(LESSON_GENERATION_TOPICS),
+      tracks: Object.values(LEARNING_TRACKS).map((track) => ({
+        id: track.id,
+        source: track.source,
+        target: track.target,
+        support: track.support,
+      })),
     },
     tutorChat: {
       sarvamChat: Boolean(process.env.SARVAM_API_KEY),
       localFallback: true,
-      model: process.env.SARVAM_TUTOR_MODEL || process.env.SARVAM_CHAT_MODEL || "sarvam-30b",
+      model:
+        process.env.SARVAM_TUTOR_MODEL || process.env.SARVAM_CHAT_MODEL || DEFAULT_CHAT_MODEL,
       version: TUTOR_CHAT_VERSION,
     },
   });
@@ -1412,7 +1551,7 @@ if (require.main === module) {
   const server = createServer();
   server.listen(PORT, "0.0.0.0", () => {
     const order = configuredProviderOrder().join(" -> ");
-    const lessonModel = process.env.SARVAM_CHAT_MODEL || "sarvam-30b";
+    const lessonModel = process.env.SARVAM_CHAT_MODEL || DEFAULT_CHAT_MODEL;
     const tutorModel = process.env.SARVAM_TUTOR_MODEL || lessonModel;
     console.log(`[server] running at http://localhost:${PORT}`);
     console.log(`[server] translation order: ${order}`);

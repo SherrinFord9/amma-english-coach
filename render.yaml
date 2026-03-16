@@ -15,9 +15,9 @@ services:
       - key: SARVAM_MODEL
         value: sarvam-translate:v1
       - key: SARVAM_CHAT_MODEL
-        value: sarvam-30b
+        value: sarvam-105b
       - key: SARVAM_TUTOR_MODEL
-        value: sarvam-30b
+        value: sarvam-105b
       - key: GEMINI_API_KEY
         sync: false
       - key: GEMINI_MODEL

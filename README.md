@@ -13,7 +13,7 @@ This repo includes a local website MVP with translation provider fallback:
 
 Features:
 
-- Kannada-first beginner English lessons
+- Dual learning tracks: Kannada -> English and Marathi -> Kannada
 - Sarvam-powered lesson generation by topic/level (`/api/generate-lesson`)
 - Phrase audio playback (normal + slow)
 - Voice practice via browser speech recognition (if supported)
@@ -80,7 +80,7 @@ Notes for free plan:
 ### Provider setup
 
 - `SARVAM_API_KEY`: best for Kannada translation quality.
-- `SARVAM_CHAT_MODEL`: model used for phrase generation (`sarvam-30b` default).
+- `SARVAM_CHAT_MODEL`: model used for phrase generation (`sarvam-105b` default).
 - `GEMINI_API_KEY`: good backup with free tier limits in AI Studio.
 - `OPENROUTER_API_KEY`: optional additional fallback.
 - If no keys are set, the app still tries a public MyMemory fallback.

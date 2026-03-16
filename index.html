@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Noto+Sans+Kannada:wght@400;500;700&family=Sora:wght@600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Noto+Sans+Devanagari:wght@400;500;700&family=Noto+Sans+Kannada:wght@400;500;700&family=Sora:wght@600;700&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./styles.css" />
@@ -21,7 +21,14 @@
       <header class="hero reveal">
         <div class="hero-top">
           <p id="hero-tag" class="hero-tag">Kannada -> English</p>
-          <button id="lang-toggle" class="lang-toggle" type="button">EN</button>
+          <div class="hero-controls">
+            <label id="learning-track-label" for="learning-track" class="subtle">Learning track</label>
+            <select id="learning-track" class="learning-track-select">
+              <option id="learning-track-opt-kn-en" value="kn-en">Kannada -> English</option>
+              <option id="learning-track-opt-mr-kn" value="mr-kn">Marathi -> Kannada</option>
+            </select>
+            <button id="lang-toggle" class="lang-toggle" type="button">EN</button>
+          </div>
         </div>
         <h1>Amma English Coach</h1>
         <p id="hero-sub" class="hero-sub kn">
