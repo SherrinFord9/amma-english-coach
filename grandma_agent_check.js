@@ -33,11 +33,20 @@ function normalize(text) {
 
 async function ensureLanguage(driver, lang) {
   const toggle = await driver.findElement(By.id("lang-toggle"));
+  const detectUiLanguage = async () => {
+    const progressTitle = normalize(await driver.findElement(By.id("progress-title")).getText());
+    if (progressTitle.toLowerCase().includes("today progress")) return "en";
+    if (progressTitle.includes("ಇವತ್ತಿನ ಪ್ರಗತಿ")) return "kn";
+
+    const lessonTitle = normalize(await driver.findElement(By.id("lesson-select-title")).getText());
+    if (lessonTitle.toLowerCase().includes("choose lesson")) return "en";
+    if (lessonTitle.includes("ಪಾಠ ಆಯ್ಕೆ")) return "kn";
+    return "";
+  };
+
   for (let i = 0; i < 3; i += 1) {
-    const label = normalize(await toggle.getText());
-    const isEnglishUi = label.includes("ಕನ್ನಡ");
-    const isKannadaUi = label.includes("EN");
-    if ((lang === "en" && isEnglishUi) || (lang === "kn" && isKannadaUi)) {
+    const current = await detectUiLanguage();
+    if (current === lang) {
       return;
     }
     await toggle.click();

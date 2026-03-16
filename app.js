@@ -1202,6 +1202,11 @@ function tutorInputPlaceholderText() {
     : `Type a sentence in ${support} or ${target}`;
 }
 
+function languageToggleText() {
+  const support = languageName(activeTrack().support);
+  return `EN / ${support}`;
+}
+
 function tutorWelcomeText() {
   if (learningTrack === "mr-kn") {
     return uiLanguage === "kn"
@@ -1256,7 +1261,7 @@ function updateScenarioAvailability() {
 }
 
 function applyUiLanguage() {
-  els.langToggle.textContent = t("langToggle");
+  els.langToggle.textContent = languageToggleText();
   updateLearningTrackOptions();
   els.heroSub.textContent = t("heroSub");
   els.progressTitle.textContent = t("progressTitle");
